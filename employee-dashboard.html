@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Dashboard — GoalTrack Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #3d74c8; --accent2: #0ea5c8;
+      --accent-light: rgba(61,116,200,0.09);
+      --bg: #f0f4ff; --bg2: #e8f0fe;
+      --surface: #ffffff; --surface2: #f5f8ff;
+      --border: #d0ddf5; --border2: #b8ccf0;
+      --text: #1a2340; --text2: #3d4f73; --muted: #7a8aaa;
+      --green: #22b87a; --yellow: #d97706; --red: #e03e3e;
+      --sidebar-w: 240px;
+      --shadow: 0 2px 16px rgba(61,116,200,0.08);
+      --shadow-md: 0 6px 24px rgba(61,116,200,0.12);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Poppins', sans-serif; min-height: 100vh; display: flex; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1.5px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 24px 0;
+      position: fixed; height: 100vh; overflow-y: auto;
+      box-shadow: 2px 0 16px rgba(61,116,200,0.06);
+    }
+
+    .logo { padding: 0 20px 22px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .logo h1 { font-size: 18px; font-weight: 800; color: var(--text); }
+    .logo h1 span { color: var(--accent); }
+    .role-badge {
+      display: inline-block;
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 11px; font-weight: 700;
+      padding: 4px 10px; border-radius: 20px; margin-top: 6px;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+
+    .nav-section { padding: 0 10px; margin-bottom: 6px; }
+    .nav-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); padding: 0 8px; margin-bottom: 4px; font-weight: 600; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 10px; cursor: pointer;
+      color: var(--muted); font-size: 13px; font-weight: 500;
+      transition: all 0.2s; margin-bottom: 2px;
+    }
+    .nav-item .icon { font-size: 15px; width: 20px; text-align: center; }
+    .nav-item:hover { background: var(--bg2); color: var(--text2); }
+    .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+    .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0;
+    }
+    .user-name { font-size: 13px; font-weight: 700; color: var(--text); }
+    .user-dept { font-size: 11px; color: var(--muted); }
+    .logout-btn {
+      margin-top: 12px; width: 100%; padding: 9px;
+      background: rgba(224,62,62,0.08); border: 1.5px solid rgba(224,62,62,0.2);
+      color: var(--red); border-radius: 10px; cursor: pointer;
+      font-size: 13px; font-family: 'Poppins', sans-serif; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover { background: rgba(224,62,62,0.15); }
+
+    /* ── MAIN ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px; min-height: 100vh; overflow-y: auto; }
+    .page-header { margin-bottom: 28px; }
+    .page-header h2 { font-size: 24px; font-weight: 800; color: var(--text); }
+    .page-header p { color: var(--muted); margin-top: 4px; font-size: 13px; }
+
+    /* ── STATS ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 14px; margin-bottom: 28px; }
+    .stat-card {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 16px; padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .stat-card .stat-icon { font-size: 22px; margin-bottom: 10px; }
+    .stat-card .stat-val { font-size: 28px; font-weight: 800; color: var(--text); }
+    .stat-card .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* ── SECTION ── */
+    .section { background: var(--surface); border: 1.5px solid var(--border); border-radius: 18px; padding: 26px; margin-bottom: 22px; box-shadow: var(--shadow); }
+    .section-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .section-head h3 { font-size: 15px; font-weight: 700; color: var(--text); }
+
+    /* ── BUTTONS ── */
+    .btn { padding: 9px 16px; border-radius: 9px; border: none; cursor: pointer; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; box-shadow: 0 3px 10px rgba(61,116,200,0.2); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(61,116,200,0.28); }
+    .btn-outline { background: var(--surface2); border: 1.5px solid var(--border2); color: var(--text2); }
+    .btn-outline:hover { background: var(--bg2); border-color: var(--accent); color: var(--accent); }
+    .btn-sm { padding: 7px 13px; font-size: 12px; }
+    .btn-danger { background: rgba(224,62,62,0.08); color: var(--red); border: 1.5px solid rgba(224,62,62,0.2); }
+    .btn-danger:hover { background: rgba(224,62,62,0.16); }
+    .btn-success { background: rgba(34,184,122,0.1); color: var(--green); border: 1.5px solid rgba(34,184,122,0.25); }
+
+    /* ── GOAL CARDS ── */
+    .goal-card {
+      background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 18px; margin-bottom: 12px; transition: all 0.2s;
+    }
+    .goal-card:hover { border-color: var(--border2); box-shadow: var(--shadow-md); }
+    .goal-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .goal-title { font-weight: 700; font-size: 14px; color: var(--text); }
+    .goal-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; white-space: nowrap; }
+    .badge-approved { background: rgba(34,184,122,0.12); color: #15a068; border: 1px solid rgba(34,184,122,0.25); }
+    .badge-submitted { background: rgba(217,119,6,0.1); color: #b45309; border: 1px solid rgba(217,119,6,0.2); }
+    .badge-draft { background: rgba(122,138,170,0.12); color: var(--muted); border: 1px solid rgba(122,138,170,0.2); }
+    .badge-rejected { background: rgba(224,62,62,0.1); color: #c02828; border: 1px solid rgba(224,62,62,0.2); }
+    .badge-locked { background: var(--accent-light); color: var(--accent); border: 1px solid rgba(61,116,200,0.2); }
+    .badge-uom { background: rgba(124,93,199,0.1); color: #6340c0; border: 1px solid rgba(124,93,199,0.2); }
+
+    /* Progress quarters */
+    .progress-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 10px; }
+    .q-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .q-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; }
+    .q-val { font-size: 15px; font-weight: 700; color: var(--text); }
+    .q-status { font-size: 10px; margin-top: 3px; font-weight: 600; }
+    .status-on-track { color: var(--green); }
+    .status-not-started { color: var(--muted); }
+    .status-completed { color: var(--accent); }
+
+    /* Weight bar */
+    .weight-display { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .weight-bar-bg { flex: 1; height: 7px; background: var(--bg2); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+    .weight-bar-fill { height: 100%; background: linear-gradient(to right, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.5s; }
+    .weight-txt { font-size: 12px; font-weight: 700; color: var(--accent); min-width: 35px; text-align: right; }
+
+    /* Form */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1/-1; }
+    .form-group label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; }
+    .form-group input, .form-group select, .form-group textarea {
+      background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 11px 14px;
+      color: var(--text); font-family: 'Poppins', sans-serif; font-size: 13px;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(61,116,200,0.1);
+    }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-group select option { background: var(--surface); color: var(--text); }
+
+    /* Validation box */
+    .validation-box {
+      background: var(--accent-light); border: 1.5px solid rgba(61,116,200,0.18);
+      border-radius: 12px; padding: 16px; margin-top: 16px;
+      display: flex; gap: 28px; flex-wrap: wrap;
+    }
+    .val-item { font-size: 13px; }
+    .val-item .val-label { color: var(--muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .val-item .val-num { font-size: 20px; font-weight: 800; margin-top: 2px; }
+    .val-ok { color: var(--green); }
+    .val-warn { color: var(--yellow); }
+    .val-err { color: var(--red); }
+
+    /* Check-in form */
+    .checkin-form {
+      background: var(--accent-light); border: 1.5px solid rgba(61,116,200,0.18);
+      border-radius: 12px; padding: 16px; margin-top: 10px; display: none;
+    }
+    .checkin-form.open { display: block; }
+
+    /* Page sections */
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+    .empty .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty p { font-size: 14px; margin-bottom: 16px; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-left: 4px solid var(--accent);
+      padding: 14px 20px; border-radius: 12px; font-size: 13px; color: var(--text);
+      box-shadow: var(--shadow-md);
+      transform: translateY(100px); opacity: 0; transition: all 0.4s ease;
+      max-width: 320px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media(max-width: 768px) {
+      .sidebar { width: 100%; height: auto; position: relative; }
+      .main { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+<script src="state.js"></script>
+
+<div class="sidebar">
+  <div class="logo">
+    <h1>GoalTrack <span>Pro</span></h1>
+    <div class="role-badge">Employee</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <div class="nav-item active" onclick="showSection('overview',this)">
+      <span class="icon">🏠</span> Dashboard
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Goals</div>
+    <div class="nav-item" onclick="showSection('my-goals',this)">
+      <span class="icon">🎯</span> My Goals
+    </div>
+    <div class="nav-item" onclick="showSection('create-goal',this)">
+      <span class="icon">➕</span> Create Goal
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Tracking</div>
+    <div class="nav-item" onclick="showSection('checkins',this)">
+      <span class="icon">📊</span> Quarterly Check-ins
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="avatar" id="sidebarAvatar">--</div>
+      <div>
+        <div class="user-name" id="sidebarName">Loading...</div>
+        <div class="user-dept" id="sidebarDept">--</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="GTP.logout()">Logout</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-section active" id="section-overview">
+    <div class="page-header">
+      <h2>👋 Welcome back, <span id="headerName">Aryan</span></h2>
+      <p>FY 2026 Goal Cycle — Currently in <strong id="currentQuarter" style="color:var(--accent)">Q2 Check-in</strong> phase</p>
+    </div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="section">
+      <div class="section-head">
+        <h3>My Goal Summary</h3>
+        <span id="weightageStatus" class="badge"></span>
+      </div>
+      <div id="overviewGoals"></div>
+    </div>
+  </div>
+
+  <!-- MY GOALS -->
+  <div class="page-section" id="section-my-goals">
+    <div class="page-header">
+      <h2>My Goals</h2>
+      <p>View, manage, and submit your goals for manager approval</p>
+    </div>
+    <div class="section">
+      <div class="section-head">
+        <h3>All Goals</h3>
+        <button class="btn btn-primary btn-sm" onclick="showSection('create-goal',null)">+ New Goal</button>
+      </div>
+      <div id="allGoalsList"></div>
+    </div>
+  </div>
+
+  <!-- CREATE GOAL -->
+  <div class="page-section" id="section-create-goal">
+    <div class="page-header">
+      <h2>Create New Goal</h2>
+      <p>Define your goal with targets, weightage and unit of measurement</p>
+    </div>
+    <div class="section">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Thrust Area *</label>
+          <select id="thrustArea">
+            <option value="">Select Thrust Area...</option>
+            <option>Revenue Growth</option>
+            <option>Cost Optimisation</option>
+            <option>Customer Satisfaction</option>
+            <option>Safety & Compliance</option>
+            <option>Team Development</option>
+            <option>Innovation</option>
+            <option>Process Excellence</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Unit of Measurement (UoM) *</label>
+          <select id="uomType" onchange="toggleTargetField()">
+            <option value="">Select UoM...</option>
+            <option value="numeric">Numeric (Higher is better)</option>
+            <option value="percent">Percentage % (Higher is better)</option>
+            <option value="percent_max">Percentage % (Lower is better)</option>
+            <option value="timeline">Timeline / Date</option>
+            <option value="zero">Zero-based (Zero = Success)</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Goal Title *</label>
+          <input type="text" id="goalTitle" placeholder="e.g. Increase API uptime to 99.9%" />
+        </div>
+        <div class="form-group full">
+          <label>Description</label>
+          <textarea id="goalDesc" placeholder="Describe the goal objective and scope..."></textarea>
+        </div>
+        <div class="form-group" id="targetGroup">
+          <label>Target Value *</label>
+          <input type="text" id="goalTarget" placeholder="e.g. 99.9 or 2026-06-30" />
+        </div>
+        <div class="form-group">
+          <label>Weightage (%) * <span style="color:var(--muted);font-size:11px;text-transform:none;">Min 10%</span></label>
+          <input type="number" id="goalWeightage" min="10" max="100" placeholder="e.g. 25" />
+        </div>
+      </div>
+
+      <div class="validation-box" id="validationBox">
+        <div class="val-item">
+          <div class="val-label">Goals Count</div>
+          <div class="val-num" id="valCount">0</div>
+          <div style="font-size:11px;color:var(--muted)">Max 8</div>
+        </div>
+        <div class="val-item">
+          <div class="val-label">Total Weightage</div>
+          <div class="val-num" id="valWeight">0%</div>
+          <div style="font-size:11px;color:var(--muted)">Must = 100%</div>
+        </div>
+        <div class="val-item">
+          <div class="val-label">Remaining</div>
+          <div class="val-num" id="valRemaining">100%</div>
+          <div style="font-size:11px;color:var(--muted)">Available</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:22px;">
+        <button class="btn btn-primary" onclick="saveGoal('draft')">💾 Save as Draft</button>
+        <button class="btn btn-outline" onclick="saveGoal('submitted')">📤 Submit for Approval</button>
+        <button class="btn btn-outline" onclick="showSection('my-goals',null)" style="margin-left:auto;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUARTERLY CHECK-INS -->
+  <div class="page-section" id="section-checkins">
+    <div class="page-header">
+      <h2>Quarterly Check-ins</h2>
+      <p>Log your planned vs actual achievement for Q2 — October window</p>
+    </div>
+    <div class="section">
+      <div class="section-head">
+        <h3>Achievement Update — <span style="color:var(--accent)">Q2 2026</span></h3>
+        <span class="badge badge-approved">Window Open</span>
+      </div>
+      <div id="checkinList"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Load logged-in user from session (written by login.html after Firebase auth) ──
+const _user = GTP.getCurrentUser();
+if (!_user || _user.role !== 'emp') {
+  window.location.href = 'login.html';
+}
+
+// Use Firebase UID as the employee identifier (matches what signup.html stored)
+const EMP_ID   = _user ? _user.uid  : null;
+const EMP_NAME = _user ? _user.name : 'Employee';
+
+// ── Populate sidebar & header with real user data ──
+(function initUI() {
+  if (!_user) return;
+  const initials = (_user.firstName && _user.lastName)
+    ? (_user.firstName[0] + _user.lastName[0]).toUpperCase()
+    : _user.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('sidebarAvatar').textContent = initials;
+  document.getElementById('sidebarName').textContent   = _user.name;
+  document.getElementById('sidebarDept').textContent   = _user.dept || 'Employee';
+  document.getElementById('headerName').textContent    = _user.firstName || _user.name.split(' ')[0];
+})();
+
+function showSection(id, navEl) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  if (navEl) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    navEl.classList.add('active');
+  }
+  if (id === 'overview')    renderOverview();
+  if (id === 'my-goals')    renderGoals();
+  if (id === 'create-goal') renderValidation();
+  if (id === 'checkins')    renderCheckins();
+}
+
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.borderLeftColor = type==='error' ? 'var(--red)' : type==='success' ? 'var(--green)' : 'var(--accent)';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+function renderOverview() {
+  const goals = GTP.getGoals().filter(g => g.employeeId === EMP_ID);
+  const approved = goals.filter(g => g.status === 'approved').length;
+  const totalW = goals.reduce((s,g) => s + (g.weightage||0), 0);
+  const avgArr = goals.filter(g => g.achievements.Q1 !== null).map(g => GTP.computeScore(g.uom,g.target,g.achievements.Q1)||0);
+  const avg = avgArr.length ? Math.round(avgArr.reduce((a,b)=>a+b,0)/avgArr.length) : 0;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-val">${goals.length}</div><div class="stat-label">Total Goals</div></div>
+    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val">${approved}</div><div class="stat-label">Approved</div></div>
+    <div class="stat-card"><div class="stat-icon">⚖️</div><div class="stat-val">${totalW}%</div><div class="stat-label">Total Weightage</div></div>
+    <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-val">${avg}%</div><div class="stat-label">Avg Q1 Score</div></div>
+  `;
+
+  const wBadge = document.getElementById('weightageStatus');
+  if (totalW === 100) { wBadge.textContent = '✅ Weightage = 100%'; wBadge.className = 'badge badge-approved'; }
+  else if (totalW > 100) { wBadge.textContent = `⚠️ Over ${totalW}%`; wBadge.className = 'badge badge-rejected'; }
+  else { wBadge.textContent = `⚠️ ${totalW}% (needs ${100-totalW}% more)`; wBadge.className = 'badge badge-submitted'; }
+
+  const html = goals.map(g => `
+    <div class="goal-card">
+      <div class="goal-card-top">
+        <div>
+          <div class="goal-title">${g.title}</div>
+          <div class="goal-meta">${g.thrustArea} · UoM: ${g.uom}</div>
+        </div>
+        <div class="badges">
+          <span class="badge badge-${g.status}">${g.status.charAt(0).toUpperCase()+g.status.slice(1)}</span>
+          ${g.locked ? '<span class="badge badge-locked">🔒 Locked</span>' : ''}
+        </div>
+      </div>
+      <div class="weight-display">
+        <span style="font-size:11px;color:var(--muted);width:70px;font-weight:600">Weight</span>
+        <div class="weight-bar-bg"><div class="weight-bar-fill" style="width:${g.weightage}%"></div></div>
+        <span class="weight-txt">${g.weightage}%</span>
+      </div>
+    </div>
+  `).join('') || '<div class="empty"><div class="empty-icon">🎯</div><p>No goals yet. Create your first goal!</p></div>';
+
+  document.getElementById('overviewGoals').innerHTML = html;
+}
+
+function renderGoals() {
+  const goals = GTP.getGoals().filter(g => g.employeeId === EMP_ID);
+  const html = goals.map(g => {
+    const canSubmit = !g.locked && g.status === 'draft';
+    const canDelete = !g.locked && (g.status === 'draft' || g.status === 'returned');
+    return `
+    <div class="goal-card">
+      <div class="goal-card-top">
+        <div>
+          <div class="goal-title">${g.title}</div>
+          <div class="goal-meta">${g.thrustArea} · Target: ${g.target} · ${g.description}</div>
+        </div>
+        <div class="badges">
+          <span class="badge badge-uom">${g.uom}</span>
+          <span class="badge badge-${g.status}">${g.status}</span>
+          ${g.locked ? '<span class="badge badge-locked">🔒</span>' : ''}
+        </div>
+      </div>
+      <div class="weight-display">
+        <span style="font-size:11px;color:var(--muted);width:70px;font-weight:600">Weightage</span>
+        <div class="weight-bar-bg"><div class="weight-bar-fill" style="width:${g.weightage}%"></div></div>
+        <span class="weight-txt">${g.weightage}%</span>
+      </div>
+      ${canSubmit || canDelete ? `
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        ${canSubmit ? `<button class="btn btn-primary btn-sm" onclick="submitGoal('${g.id}')">📤 Submit for Approval</button>` : ''}
+        ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteGoal('${g.id}')">🗑 Delete</button>` : ''}
+      </div>` : ''}
+    </div>`;
+  }).join('') || '<div class="empty"><div class="empty-icon">🎯</div><p>No goals yet.</p><button class="btn btn-primary" onclick="showSection(\'create-goal\',null)">Create First Goal</button></div>';
+
+  document.getElementById('allGoalsList').innerHTML = html;
+}
+
+function renderValidation() {
+  const goals = GTP.getGoals().filter(g => g.employeeId === EMP_ID);
+  const count = goals.length;
+  const totalW = goals.reduce((s,g) => s+(g.weightage||0),0);
+  const remaining = 100 - totalW;
+
+  const cEl = document.getElementById('valCount');
+  cEl.textContent = count;
+  cEl.className = 'val-num ' + (count >= 8 ? 'val-err' : count >= 6 ? 'val-warn' : 'val-ok');
+
+  const wEl = document.getElementById('valWeight');
+  wEl.textContent = totalW + '%';
+  wEl.className = 'val-num ' + (totalW === 100 ? 'val-ok' : totalW > 100 ? 'val-err' : 'val-warn');
+
+  const rEl = document.getElementById('valRemaining');
+  rEl.textContent = remaining + '%';
+  rEl.className = 'val-num ' + (remaining === 0 ? 'val-ok' : remaining > 0 ? 'val-warn' : 'val-err');
+}
+
+function toggleTargetField() {
+  const uom = document.getElementById('uomType').value;
+  const targetInput = document.getElementById('goalTarget');
+  if (uom === 'zero') { targetInput.value = '0'; targetInput.disabled = true; document.getElementById('targetGroup').style.opacity = '0.5'; }
+  else if (uom === 'timeline') { targetInput.disabled = false; targetInput.type = 'date'; document.getElementById('targetGroup').style.opacity = '1'; }
+  else { targetInput.disabled = false; targetInput.type = 'text'; document.getElementById('targetGroup').style.opacity = '1'; }
+}
+
+function saveGoal(status) {
+  const thrustArea = document.getElementById('thrustArea').value;
+  const title = document.getElementById('goalTitle').value.trim();
+  const uom = document.getElementById('uomType').value;
+  const target = document.getElementById('goalTarget').value;
+  const weightage = parseInt(document.getElementById('goalWeightage').value);
+  const desc = document.getElementById('goalDesc').value.trim();
+
+  if (!thrustArea || !title || !uom) { toast('Please fill all required fields', 'error'); return; }
+  if (!target && uom !== 'zero') { toast('Please set a target value', 'error'); return; }
+  if (!weightage || weightage < 10) { toast('Minimum weightage is 10%', 'error'); return; }
+
+  const goals = GTP.getGoals();
+  const myGoals = goals.filter(g => g.employeeId === EMP_ID);
+  if (myGoals.length >= 8) { toast('Maximum 8 goals allowed', 'error'); return; }
+
+  const totalW = myGoals.reduce((s,g) => s+(g.weightage||0),0);
+  if (totalW + weightage > 100) { toast(`Exceeds 100%. Only ${100-totalW}% remaining.`, 'error'); return; }
+
+  const newGoal = {
+    id: 'g'+Date.now(), employeeId: EMP_ID, cycleId: 'c1',
+    dept:      _user ? (_user.dept      || '') : '',   // ← dept isolation
+    managerId: _user ? (_user.managerId || '') : '',   // ← manager isolation
+    thrustArea, title, description: desc, uom,
+    target: uom==='zero'?0:target,
+    weightage, status, locked: false,
+    achievements:{Q1:null,Q2:null,Q3:null,Q4:null},
+    goalStatus:{Q1:null,Q2:null,Q3:null,Q4:null},
+    checkinComments:{Q1:null,Q2:null,Q3:null,Q4:null}
+  };
+
+  goals.push(newGoal);
+  GTP.saveGoals(goals);
+  GTP.addAudit(EMP_NAME,'Employee',status==='submitted'?'Goal Submitted':'Goal Saved as Draft',title,newGoal.id);
+
+  ['thrustArea','goalTitle','uomType','goalTarget','goalWeightage','goalDesc'].forEach(id => {
+    const el = document.getElementById(id); el.value = '';
+    if(el.disabled) el.disabled = false;
+  });
+
+  toast(status==='submitted'?'📤 Goal submitted for manager approval!':'💾 Goal saved as draft','success');
+  showSection('my-goals', document.querySelector('.nav-item:nth-child(2)'));
+}
+
+function submitGoal(id) {
+  const goals = GTP.getGoals();
+  const g = goals.find(x => x.id===id); if(!g) return;
+  g.status = 'submitted';
+  GTP.saveGoals(goals);
+  GTP.addAudit(EMP_NAME,'Employee','Goal Submitted',g.title,id);
+  toast('📤 Goal submitted for manager approval!','success');
+  renderGoals();
+}
+
+function deleteGoal(id) {
+  if(!confirm('Delete this goal?')) return;
+  const goals = GTP.getGoals().filter(g => g.id!==id);
+  GTP.saveGoals(goals);
+  toast('Goal deleted','error');
+  renderGoals();
+}
+
+function renderCheckins() {
+  const goals = GTP.getGoals().filter(g => g.employeeId===EMP_ID && g.status==='approved');
+  const quarter = 'Q2';
+
+  if(!goals.length) {
+    document.getElementById('checkinList').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><p>No approved goals yet. Get your goals approved first.</p></div>';
+    return;
+  }
+
+  const html = goals.map(g => {
+    const score = GTP.computeScore(g.uom,g.target,g.achievements[quarter]);
+    const managerComment = g.checkinComments?.[quarter];
+    return `
+    <div class="goal-card" id="goalcard-${g.id}">
+      <div class="goal-card-top">
+        <div>
+          <div class="goal-title">${g.title}</div>
+          <div class="goal-meta">Target: <strong style="color:var(--text)">${g.target}</strong> &nbsp;·&nbsp; UoM: ${g.uom} &nbsp;·&nbsp; Weight: ${g.weightage}%</div>
+        </div>
+        <div class="badges">
+          ${g.goalStatus[quarter] ? `<span class="badge badge-${g.goalStatus[quarter]==='Completed'?'approved':g.goalStatus[quarter]==='On Track'?'submitted':'draft'}">${g.goalStatus[quarter]}</span>` : '<span class="badge badge-draft">Not Updated</span>'}
+        </div>
+      </div>
+      <div class="progress-row">
+        ${['Q1','Q2','Q3','Q4'].map(q=>`
+          <div class="q-block">
+            <div class="q-label">${q}</div>
+            <div class="q-val">${g.achievements[q]!==null?g.achievements[q]:'—'}</div>
+            <div class="q-status ${g.goalStatus[q]==='On Track'?'status-on-track':g.goalStatus[q]==='Completed'?'status-completed':'status-not-started'}">${g.goalStatus[q]||'—'}</div>
+          </div>
+        `).join('')}
+      </div>
+      ${score!==null?`<div style="margin-top:10px;font-size:12px;color:var(--muted);">${quarter} Score: <strong style="color:${score>=80?'var(--green)':score>=50?'var(--yellow)':'var(--red)'}">${score}%</strong></div>`:''}
+      ${managerComment?`
+      <div style="margin-top:12px;background:rgba(124,93,199,0.08);border:1.5px solid rgba(124,93,199,0.18);border-radius:10px;padding:10px 14px;font-size:13px;">
+        <span style="color:#6340c0;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase">Manager Comment</span>
+        <div style="color:var(--text2);margin-top:4px">${managerComment}</div>
+      </div>`:''}
+      <div style="margin-top:12px;">
+        <button class="btn btn-outline btn-sm" onclick="toggleCheckinForm('${g.id}')">
+          ${g.achievements[quarter]!==null?'✏️ Update Achievement':'+ Log Achievement'}
+        </button>
+      </div>
+      <div class="checkin-form" id="checkinform-${g.id}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="form-group">
+            <label>Actual Achievement</label>
+            <input type="text" id="ach-${g.id}" value="${g.achievements[quarter]!==null?g.achievements[quarter]:''}" placeholder="Enter actual value" />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="achstatus-${g.id}">
+              <option value="Not Started" ${g.goalStatus[quarter]==='Not Started'?'selected':''}>Not Started</option>
+              <option value="On Track" ${g.goalStatus[quarter]==='On Track'?'selected':''}>On Track</option>
+              <option value="Completed" ${g.goalStatus[quarter]==='Completed'?'selected':''}>Completed</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveAchievement('${g.id}','${quarter}')">💾 Save Achievement</button>
+        <button class="btn btn-outline btn-sm" onclick="toggleCheckinForm('${g.id}')" style="margin-left:8px;">Cancel</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('checkinList').innerHTML = html;
+}
+
+function toggleCheckinForm(id) { document.getElementById('checkinform-'+id).classList.toggle('open'); }
+
+function saveAchievement(goalId, quarter) {
+  const achVal = document.getElementById('ach-'+goalId).value.trim();
+  const status  = document.getElementById('achstatus-'+goalId).value;
+  if(!achVal) { toast('Please enter achievement value','error'); return; }
+
+  const goals = GTP.getGoals();
+  const g = goals.find(x => x.id===goalId); if(!g) return;
+
+  const parsed = isNaN(achVal) ? achVal : parseFloat(achVal);
+  g.achievements[quarter] = parsed;
+  g.goalStatus[quarter] = status;
+  GTP.saveGoals(goals);
+  GTP.addAudit(EMP_NAME,'Employee',`${quarter} Achievement Updated`,`${g.title} — ${achVal}`,goalId);
+  toast(`✅ ${quarter} achievement saved!`,'success');
+  renderCheckins();
+}
+
+renderOverview();
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — GoalTrack Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #c47f17; --accent2: #f59e0b;
+      --accent-light: rgba(196,127,23,0.09);
+      --bg: #fffbf0; --bg2: #fff3d6;
+      --surface: #ffffff; --surface2: #fffdf5;
+      --border: #e8d8a8; --border2: #d4bc80;
+      --text: #251a00; --text2: #5a4010; --muted: #9a7c30;
+      --green: #22b87a; --blue: #3d74c8; --purple: #7c5dc7;
+      --red: #e03e3e;
+      --sidebar-w: 240px;
+      --shadow: 0 2px 16px rgba(196,127,23,0.08);
+      --shadow-md: 0 6px 24px rgba(196,127,23,0.13);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Poppins', sans-serif; min-height: 100vh; display: flex; }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1.5px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 24px 0;
+      position: fixed; height: 100vh; overflow-y: auto;
+      box-shadow: 2px 0 16px rgba(196,127,23,0.07);
+    }
+
+    .logo { padding: 0 20px 22px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .logo h1 { font-size: 18px; font-weight: 800; color: var(--text); }
+    .logo h1 span { color: var(--accent); }
+    .role-badge { display: inline-block; background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-top: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    .nav-section { padding: 0 10px; margin-bottom: 6px; }
+    .nav-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); padding: 0 8px; margin-bottom: 4px; font-weight: 600; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 500; transition: all 0.2s; margin-bottom: 2px; }
+    .nav-item .icon { font-size: 15px; width: 20px; text-align: center; }
+    .nav-item:hover { background: var(--bg2); color: var(--text2); }
+    .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+    .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,var(--accent),var(--accent2)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 700; color: var(--text); }
+    .user-dept { font-size: 11px; color: var(--muted); }
+    .logout-btn { margin-top: 12px; width: 100%; padding: 9px; background: rgba(224,62,62,0.08); border: 1.5px solid rgba(224,62,62,0.2); color: var(--red); border-radius: 10px; cursor: pointer; font-size: 13px; font-family: 'Poppins',sans-serif; font-weight: 600; transition: all 0.2s; }
+    .logout-btn:hover { background: rgba(224,62,62,0.16); }
+
+    .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px; min-height: 100vh; overflow-y: auto; }
+    .page-header { margin-bottom: 28px; }
+    .page-header h2 { font-size: 24px; font-weight: 800; color: var(--text); }
+    .page-header p { color: var(--muted); margin-top: 4px; font-size: 13px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 14px; margin-bottom: 28px; }
+    .stat-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+    .stat-card .stat-icon { font-size: 22px; margin-bottom: 10px; }
+    .stat-card .stat-val { font-size: 28px; font-weight: 800; color: var(--text); }
+    .stat-card .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .section { background: var(--surface); border: 1.5px solid var(--border); border-radius: 18px; padding: 26px; margin-bottom: 22px; box-shadow: var(--shadow); }
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .section-head h3 { font-size: 15px; font-weight: 700; color: var(--text); }
+
+    .btn { padding: 9px 16px; border-radius: 9px; border: none; cursor: pointer; font-family: 'Poppins',sans-serif; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg,var(--accent),var(--accent2)); color: #fff; box-shadow: 0 3px 10px rgba(196,127,23,0.22); }
+    .btn-primary:hover { transform: translateY(-1px); }
+    .btn-outline { background: var(--surface2); border: 1.5px solid var(--border2); color: var(--text2); }
+    .btn-outline:hover { background: var(--bg2); border-color: var(--accent); color: var(--accent); }
+    .btn-sm { padding: 7px 13px; font-size: 12px; }
+    .btn-blue { background: rgba(61,116,200,0.1); color: var(--blue); border: 1.5px solid rgba(61,116,200,0.22); }
+    .btn-blue:hover { background: rgba(61,116,200,0.18); }
+    .btn-unlock { background: var(--accent-light); color: var(--accent); border: 1.5px solid rgba(196,127,23,0.25); }
+    .btn-unlock:hover { background: rgba(196,127,23,0.16); }
+
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; white-space: nowrap; }
+    .badge-approved { background: rgba(34,184,122,0.12); color: #15a068; border: 1px solid rgba(34,184,122,0.25); }
+    .badge-submitted { background: rgba(196,127,23,0.1); color: #b45309; border: 1px solid rgba(196,127,23,0.22); }
+    .badge-draft { background: rgba(154,124,48,0.1); color: var(--muted); border: 1px solid rgba(154,124,48,0.18); }
+    .badge-rejected { background: rgba(224,62,62,0.1); color: #c02828; border: 1px solid rgba(224,62,62,0.2); }
+    .badge-locked { background: var(--accent-light); color: var(--accent); border: 1px solid rgba(196,127,23,0.22); }
+
+    /* Report Table */
+    .report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .report-table th { background: var(--bg2); color: var(--text2); font-weight: 700; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; padding: 12px 14px; text-align: left; border-bottom: 1.5px solid var(--border); }
+    .report-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+    .report-table tr:hover td { background: var(--bg2); }
+    .score-pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .score-hi { background: rgba(34,184,122,0.12); color: #15a068; }
+    .score-mid { background: rgba(196,127,23,0.1); color: #b45309; }
+    .score-lo { background: rgba(224,62,62,0.1); color: #c02828; }
+    .score-na { background: rgba(154,124,48,0.1); color: var(--muted); }
+
+    /* Audit */
+    .audit-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .audit-row:last-child { border-bottom: none; }
+    .audit-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .audit-dot-manager { background: var(--purple); }
+    .audit-dot-employee { background: var(--blue); }
+    .audit-dot-admin { background: var(--accent); }
+    .audit-action { font-size: 13px; font-weight: 600; color: var(--text); }
+    .audit-target { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .audit-time { font-size: 11px; color: var(--muted); margin-left: auto; white-space: nowrap; font-weight: 500; }
+    .audit-actor { font-size: 11px; font-weight: 700; margin-top: 3px; }
+
+    /* Cycle */
+    .cycle-card { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 14px; padding: 20px; }
+    .cycle-phase-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .cycle-phase-row:last-child { border-bottom: none; }
+    .phase-name { font-weight: 700; color: var(--text); min-width: 160px; }
+    .phase-date { color: var(--muted); flex: 1; }
+    .phase-status { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+    .phase-active { background: rgba(34,184,122,0.12); color: #15a068; }
+    .phase-upcoming { background: rgba(154,124,48,0.1); color: var(--muted); }
+    .phase-past { background: rgba(61,116,200,0.1); color: var(--blue); }
+
+    /* Heatmap */
+    .heatmap-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(120px,1fr)); gap: 10px; }
+    .heatmap-cell { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+    .heatmap-pct { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+    .heatmap-lbl { font-size: 11px; color: var(--muted); }
+
+    /* Goal row */
+    .goal-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .goal-row:last-child { border-bottom: none; }
+
+    /* Form */
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .form-group label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; }
+    .form-group input, .form-group select {
+      background: var(--surface2); border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 11px 14px; color: var(--text); font-family: 'Poppins',sans-serif; font-size: 13px; outline: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(196,127,23,0.1); }
+    .form-group select option { background: var(--surface); }
+
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+    .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+    .empty .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: var(--surface); border: 1.5px solid var(--border); border-left: 4px solid var(--accent); padding: 14px 20px; border-radius: 12px; font-size: 13px; color: var(--text); box-shadow: var(--shadow-md); transform: translateY(100px); opacity: 0; transition: all 0.4s ease; max-width: 320px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+<script src="state.js"></script>
+
+<div class="sidebar">
+  <div class="logo">
+    <h1>GoalTrack <span>Pro</span></h1>
+    <div class="role-badge">Admin / HR</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <div class="nav-item active" onclick="showSection('overview',this)"><span class="icon">🏠</span> Dashboard</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Cycle & Goals</div>
+    <div class="nav-item" onclick="showSection('cycle',this)"><span class="icon">📅</span> Cycle Management</div>
+    <div class="nav-item" onclick="showSection('unlock',this)"><span class="icon">🔓</span> Unlock Goals</div>
+    <div class="nav-item" onclick="showSection('shared',this)"><span class="icon">🔗</span> Shared Goals</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Analytics</div>
+    <div class="nav-item" onclick="showSection('completion',this)"><span class="icon">📊</span> Completion Status</div>
+    <div class="nav-item" onclick="showSection('report',this)"><span class="icon">📋</span> Achievement Report</div>
+    <div class="nav-item" onclick="showSection('audit',this)"><span class="icon">🔎</span> Audit Log</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="avatar" id="sidebarAvatar">AD</div>
+      <div>
+        <div class="user-name" id="sidebarName">Admin / HR</div>
+        <div class="user-dept" id="sidebarDept">System Administrator</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="GTP.logout()">Logout</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- OVERVIEW -->
+  <div class="page-section active" id="section-overview">
+    <div class="page-header"><h2>⚙️ Admin Dashboard</h2><p>FY 2026 Goal Cycle — Organization-wide overview</p></div>
+    <div class="stats-grid" id="adminStats"></div>
+    <div class="section">
+      <div class="section-head"><h3>Department Summary</h3></div>
+      <div id="deptSummary"></div>
+    </div>
+  </div>
+
+  <!-- CYCLE MANAGEMENT -->
+  <div class="page-section" id="section-cycle">
+    <div class="page-header"><h2>Cycle Management</h2><p>Manage FY 2026 goal cycle phases and timelines</p></div>
+    <div class="section">
+      <div class="section-head"><h3>FY 2026 Cycle</h3><span class="badge badge-approved">Active</span></div>
+      <div class="cycle-card" id="cyclePhases"></div>
+    </div>
+  </div>
+
+  <!-- UNLOCK GOALS -->
+  <div class="page-section" id="section-unlock">
+    <div class="page-header"><h2>Unlock Goals</h2><p>Unlock approved goals for employee modification</p></div>
+    <div class="section">
+      <div class="section-head"><h3>Locked Goals</h3></div>
+      <div id="lockedGoalsList"></div>
+    </div>
+  </div>
+
+  <!-- SHARED GOALS -->
+  <div class="page-section" id="section-shared">
+    <div class="page-header"><h2>Shared / Departmental Goals</h2><p>Push shared KPIs to multiple employees at once</p></div>
+    <div class="section">
+      <div class="section-head"><h3>Create Shared Goal</h3></div>
+      <div class="form-group">
+        <label>Thrust Area</label>
+        <select id="sharedThrust">
+          <option>Revenue Growth</option><option>Cost Optimisation</option>
+          <option>Customer Satisfaction</option><option>Safety & Compliance</option>
+          <option>Team Development</option><option>Innovation</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Goal Title</label>
+        <input type="text" id="sharedTitle" placeholder="e.g. Team Safety Training Completion" />
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="form-group">
+          <label>Target Value</label>
+          <input type="text" id="sharedTarget" placeholder="e.g. 100" />
+        </div>
+        <div class="form-group">
+          <label>UoM</label>
+          <select id="sharedUom">
+            <option value="percent">Percent</option>
+            <option value="numeric">Numeric</option>
+            <option value="timeline">Timeline</option>
+            <option value="zero">Zero-based</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Push To Department</label>
+        <select id="sharedDept">
+          <option>All Departments</option>
+          <option>Engineering</option>
+          <option>Sales</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="pushSharedGoal()">🔗 Push Shared Goal</button>
+    </div>
+  </div>
+
+  <!-- COMPLETION STATUS -->
+  <div class="page-section" id="section-completion">
+    <div class="page-header"><h2>Completion Status</h2><p>Q2 achievement completion across all employees</p></div>
+    <div class="section">
+      <div class="section-head"><h3>Q2 Completion Heatmap</h3></div>
+      <div class="heatmap-grid" id="completionHeatmap" style="margin-bottom:24px;"></div>
+    </div>
+    <div class="section">
+      <div class="section-head"><h3>Completion Details</h3></div>
+      <div id="completionTable" style="overflow-x:auto;"></div>
+    </div>
+  </div>
+
+  <!-- REPORT -->
+  <div class="page-section" id="section-report">
+    <div class="page-header"><h2>📋 Achievement Report</h2><p>Full Q1 & Q2 achievement data for all approved goals</p></div>
+    <div class="section">
+      <div class="section-head">
+        <h3>FY 2026 Report</h3>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary btn-sm" onclick="exportCSV()">⬇️ Export CSV</button>
+          <button class="btn btn-sm" style="background:rgba(224,62,62,0.08);border:1.5px solid rgba(224,62,62,0.2);color:var(--red);font-family:'Poppins',sans-serif;font-weight:600;cursor:pointer;" onclick="clearReport()">🗑️ Clear Report</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;"><table class="report-table" id="reportTable"></table></div>
+    </div>
+  </div>
+
+  <!-- AUDIT LOG -->
+  <div class="page-section" id="section-audit">
+    <div class="page-header"><h2>Audit Log</h2><p>Immutable record of all system actions and approvals</p></div>
+    <div class="section">
+      <div class="section-head">
+        <div style="display:flex;align-items:center;gap:10px;"><h3>Activity Timeline</h3><span id="auditCount" class="badge badge-submitted"></span></div>
+        <button class="btn btn-sm" style="background:rgba(224,62,62,0.08);border:1.5px solid rgba(224,62,62,0.2);color:var(--red);" onclick="clearAuditLog()">🗑️ Clear All</button>
+      </div>
+      <div id="auditList"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Load logged-in user from session ──
+const _user = GTP.getCurrentUser();
+if (!_user || _user.role !== 'adm') {
+  window.location.href = 'login.html';
+}
+
+const ADMIN_NAME = _user ? _user.name : 'Admin';
+
+// ── Populate sidebar with real admin data ──
+(function initUI() {
+  if (!_user) return;
+  const initials = (_user.firstName && _user.lastName)
+    ? (_user.firstName[0] + _user.lastName[0]).toUpperCase()
+    : _user.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('sidebarAvatar').textContent = initials;
+  document.getElementById('sidebarName').textContent   = _user.name;
+  // Admin is org-wide — never show a dept
+  document.getElementById('sidebarDept').textContent   = 'HR / System Administrator';
+})();
+
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.borderLeftColor = type==='error'?'var(--red)':type==='success'?'var(--green)':'var(--accent)';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+function showSection(id, navEl) {
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  if(navEl){ document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); navEl.classList.add('active'); }
+  const renders = { overview:renderOverview, cycle:renderCycle, unlock:renderUnlock, completion:renderCompletion, report:renderReport, audit:renderAudit };
+  if(renders[id]) renders[id]();
+}
+
+function getEmpName(id) {
+  // 1. Try cached employee list (populated by Firebase)
+  const e = GTP.getEmployees().find(x => x.uid === id || x.id === id);
+  if (e) return e.name;
+  // 2. Fall back to scanning goals for a stored employeeName field
+  const goalWithName = GTP.getGoals().find(g => (g.employeeId === id) && g.employeeName);
+  if (goalWithName) return goalWithName.employeeName;
+  // 3. Last resort: shorten the UID so it's at least readable
+  return id && id.length > 12 ? id.slice(0, 8) + '…' : (id || '—');
+}
+
+// ── Overview ──────────────────────────────────────────────────
+function renderOverview() {
+  const goals = GTP.getGoals();
+  const emps  = GTP.getEmployees();
+  const total = goals.length;
+  const approved = goals.filter(g=>g.status==='approved').length;
+  const pending  = goals.filter(g=>g.status==='submitted').length;
+  const done     = goals.filter(g=>g.status==='approved'&&g.achievements.Q2!==null).length;
+
+  document.getElementById('adminStats').innerHTML = `
+    <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-val">${emps.length}</div><div class="stat-label">Total Employees</div></div>
+    <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-val">${total}</div><div class="stat-label">Total Goals</div></div>
+    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val">${approved}</div><div class="stat-label">Approved</div></div>
+    <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-val">${pending}</div><div class="stat-label">Pending Approval</div></div>
+    <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-val">${done}</div><div class="stat-label">Q2 Check-ins Done</div></div>
+  `;
+
+  const depts = [...new Set(emps.map(e=>e.dept))];
+  document.getElementById('deptSummary').innerHTML = depts.map(dept => {
+    const dEmps = emps.filter(e=>e.dept===dept);
+    const dGoals = goals.filter(g=>dEmps.some(e=>(e.uid||e.id)===g.employeeId));
+    const dApproved = dGoals.filter(g=>g.status==='approved').length;
+    const dPending  = dGoals.filter(g=>g.status==='submitted').length;
+    return `
+    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+      <div style="font-size:20px;">🏢</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:15px;color:var(--text)">${dept}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">${dEmps.length} employees · ${dGoals.length} goals</div>
+      </div>
+      <div class="badges">
+        <span class="badge badge-approved">${dApproved} approved</span>
+        ${dPending>0?`<span class="badge badge-submitted">${dPending} pending</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Cycle ─────────────────────────────────────────────────────
+function renderCycle() {
+  const cycle = GTP.getCycle();
+  const phases = cycle.phases || {};
+  const current = cycle.currentQuarter;
+  const phaseEntries = [
+    { key:'goalSetting', label:'Goal Setting Phase' },
+    { key:'Q1', label:'Q1 Check-in Window' },
+    { key:'Q2', label:'Q2 Check-in Window' },
+    { key:'Q3', label:'Q3 Check-in Window' },
+    { key:'Q4', label:'Q4 Check-in Window' },
+  ];
+  document.getElementById('cyclePhases').innerHTML = phaseEntries.map(({key,label})=>{
+    const p = phases[key]||{};
+    const isActive = key===current||(key==='goalSetting'&&current==='Q2');
+    const isPast = ['Q1'].includes(key)&&['Q2','Q3','Q4'].includes(current);
+    const statusClass = isActive?'phase-active':isPast?'phase-past':'phase-upcoming';
+    const statusText  = isActive?'Active':isPast?'Completed':'Upcoming';
+    return `
+    <div class="cycle-phase-row">
+      <div class="phase-name">${label}</div>
+      <div class="phase-date">${p.open||'—'} → ${p.close||'—'}</div>
+      <div class="phase-status ${statusClass}">${statusText}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Unlock Goals ───────────────────────────────────────────────
+function renderUnlock() {
+  const goals = GTP.getGoals().filter(g=>g.locked);
+  if(!goals.length){ document.getElementById('lockedGoalsList').innerHTML='<div class="empty"><div class="empty-icon">🔓</div><p>No locked goals currently.</p></div>'; return; }
+  document.getElementById('lockedGoalsList').innerHTML = goals.map(g=>`
+    <div class="goal-row">
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px;color:var(--text)">${g.title}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${getEmpName(g.employeeId)} · ${g.thrustArea} · ${g.weightage}% weight</div>
+      </div>
+      <div class="badges">
+        <span class="badge badge-locked">🔒 Locked</span>
+        <span class="badge badge-approved">${g.status}</span>
+      </div>
+      <button class="btn btn-unlock btn-sm" onclick="unlockGoal('${g.id}')">🔓 Unlock</button>
+    </div>
+  `).join('');
+}
+
+function unlockGoal(id) {
+  if(!confirm('Unlock this goal for employee modification?')) return;
+  const goals = GTP.getGoals();
+  const g = goals.find(x=>x.id===id); if(!g) return;
+  g.locked = false;
+  GTP.saveGoals(goals);
+  GTP.addAudit('Admin/HR','Admin','Goal Unlocked',`${getEmpName(g.employeeId)} — ${g.title}`,id);
+  toast('🔓 Goal unlocked!','success');
+  renderUnlock();
+}
+
+// ── Shared Goals ───────────────────────────────────────────────
+function pushSharedGoal() {
+  const thrust  = document.getElementById('sharedThrust').value;
+  const title   = document.getElementById('sharedTitle').value.trim();
+  const target  = document.getElementById('sharedTarget').value;
+  const uom     = document.getElementById('sharedUom').value;
+  if(!title||!target){ toast('Please fill all fields','error'); return; }
+
+  const goals = GTP.getGoals();
+  const emps  = GTP.getEmployees();
+  const dept  = document.getElementById('sharedDept').value;
+  const targets = dept==='All Departments'?emps:emps.filter(e=>e.dept===dept);
+
+  targets.forEach(emp=>{
+    goals.push({
+      id:'sg'+Date.now()+(emp.uid||emp.id), employeeId:(emp.uid||emp.id), cycleId:'c1',
+      dept:      emp.dept      || '',   // ← dept tag so manager can filter
+      managerId: emp.managerId || '',   // ← manager link preserved
+      thrustArea:thrust, title, description:'Shared departmental KPI', uom,
+      target, weightage:0, status:'submitted', locked:false, isShared:true,
+      achievements:{Q1:null,Q2:null,Q3:null,Q4:null},
+      goalStatus:{Q1:null,Q2:null,Q3:null,Q4:null},
+      checkinComments:{Q1:null,Q2:null,Q3:null,Q4:null}
+    });
+  });
+  GTP.saveGoals(goals);
+  GTP.addAudit('Admin/HR','Admin','Shared Goal Pushed',`${title} → ${targets.length} employees`);
+  toast(`🔗 Shared goal pushed to ${targets.length} employees!`,'success');
+}
+
+// ── Completion ─────────────────────────────────────────────────
+function renderCompletion() {
+  const goals = GTP.getGoals();
+  const emps  = GTP.getEmployees();
+
+  document.getElementById('completionHeatmap').innerHTML = emps.map(emp=>{
+    const eg = goals.filter(g=>g.employeeId===(emp.uid||emp.id)&&g.status==='approved');
+    const done = eg.filter(g=>g.achievements.Q2!==null).length;
+    const pct  = eg.length?Math.round(done/eg.length*100):0;
+    const col  = pct===100?'var(--green)':pct>=50?'var(--accent)':'var(--red)';
+    return `
+    <div class="heatmap-cell">
+      <div class="heatmap-pct" style="color:${col}">${pct}%</div>
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${emp.name.split(' ')[0]}</div>
+      <div class="heatmap-lbl">${done}/${eg.length} goals</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('completionTable').innerHTML = `
+    <table class="report-table">
+      <tr><th>Employee</th><th>Dept</th><th>Approved Goals</th><th>Q2 Updated</th><th>Completion</th></tr>
+      ${emps.map(emp=>{
+        const eg = goals.filter(g=>g.employeeId===(emp.uid||emp.id)&&g.status==='approved');
+        const done = eg.filter(g=>g.achievements.Q2!==null).length;
+        const pct  = eg.length?Math.round(done/eg.length*100):0;
+        return `<tr>
+          <td style="font-weight:700">${emp.name}</td>
+          <td>${emp.dept}</td>
+          <td>${eg.length}</td>
+          <td>${done}</td>
+          <td><span class="score-pill ${pct===100?'score-hi':pct>=50?'score-mid':'score-lo'}">${pct}%</span></td>
+        </tr>`;
+      }).join('')}
+    </table>`;
+}
+
+// ── Report ─────────────────────────────────────────────────────
+function renderReport() {
+  const goals = GTP.getGoals().filter(g=>g.status==='approved');
+  const rows = goals.map(g=>{
+    const q1s = GTP.computeScore(g.uom,g.target,g.achievements.Q1);
+    const q2s = GTP.computeScore(g.uom,g.target,g.achievements.Q2);
+    const na = `<span class="score-pill score-na">—</span>`;
+    return `<tr>
+      <td style="font-weight:700">${getEmpName(g.employeeId)}</td>
+      <td>${g.title}</td>
+      <td>${g.thrustArea}</td>
+      <td>${g.uom}</td>
+      <td style="font-weight:700">${g.target}</td>
+      <td>${g.weightage}%</td>
+      <td>${g.achievements.Q1!==null?g.achievements.Q1:'<span style="color:var(--muted)">—</span>'}</td>
+      <td>${q1s!==null?`<span class="score-pill ${q1s>=80?'score-hi':q1s>=50?'score-mid':'score-lo'}">${q1s}%</span>`:na}</td>
+      <td>${g.achievements.Q2!==null?g.achievements.Q2:'<span style="color:var(--muted)">—</span>'}</td>
+      <td>${q2s!==null?`<span class="score-pill ${q2s>=80?'score-hi':q2s>=50?'score-mid':'score-lo'}">${q2s}%</span>`:na}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('reportTable').innerHTML = `
+    <thead><tr>
+      <th>Employee</th><th>Goal Title</th><th>Thrust Area</th><th>UoM</th>
+      <th>Target</th><th>Weight</th>
+      <th>Q1 Actual</th><th>Q1 Score</th>
+      <th>Q2 Actual</th><th>Q2 Score</th>
+    </tr></thead>
+    <tbody>${rows||'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:24px">No approved goals found</td></tr>'}</tbody>`;
+}
+
+function clearReport() {
+  if (!confirm('Clear ALL goals from the report? This will delete every goal in the system and cannot be undone.')) return;
+  GTP.saveGoals([]);
+  GTP.addAudit(ADMIN_NAME, 'Admin', 'Report Cleared', 'All goals deleted by Admin');
+  toast('🗑️ Report cleared — all goals removed.', 'success');
+  renderReport();
+  renderOverview();
+}
+
+function exportCSV() {
+  const goals = GTP.getGoals().filter(g=>g.status==='approved');
+  const header = ['Employee','Goal Title','Thrust Area','UoM','Target','Weightage%','Q1 Actual','Q1 Score%','Q2 Actual','Q2 Score%'];
+  const rows = goals.map(g=>{
+    const q1s = GTP.computeScore(g.uom,g.target,g.achievements.Q1);
+    const q2s = GTP.computeScore(g.uom,g.target,g.achievements.Q2);
+    return [getEmpName(g.employeeId),g.title,g.thrustArea,g.uom,g.target,g.weightage,
+            g.achievements.Q1??'',q1s??'',g.achievements.Q2??'',q2s??''].join(',');
+  });
+  const csv = [header.join(','),...rows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'GoalTrack_Achievement_Report_FY2026.csv';
+  a.click();
+  toast('⬇️ CSV exported successfully!','success');
+}
+
+// ── Audit ──────────────────────────────────────────────────────
+function clearAuditLog() {
+  if (!confirm('Clear the entire audit log? This cannot be undone.')) return;
+  GTP.saveAudit([]);
+  toast('🗑️ Audit log cleared.', 'success');
+  renderAudit();
+}
+
+function renderAudit() {
+  const log = GTP.getAudit();
+  document.getElementById('auditCount').textContent = `${log.length} entries`;
+  document.getElementById('auditList').innerHTML = log.map(entry=>{
+    const role = entry.role?.toLowerCase()||'employee';
+    const dotClass = 'audit-dot-'+role;
+    const roleColor = role==='manager'?'var(--purple)':role==='admin'?'var(--accent)':'var(--blue)';
+    return `
+    <div class="audit-row">
+      <div class="audit-dot ${dotClass}"></div>
+      <div style="flex:1">
+        <div class="audit-action">${entry.action}</div>
+        <div class="audit-target">${entry.target}</div>
+        <div class="audit-actor" style="color:${roleColor}">${entry.actor} · ${entry.role}</div>
+      </div>
+      <div class="audit-time">${entry.timestamp}</div>
+    </div>`;
+  }).join('')||'<div class="empty"><div class="empty-icon">📋</div><p>No audit entries yet</p></div>';
+}
+
+renderOverview();
+</script>
+</body>
+</html>

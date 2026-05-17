@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manager Dashboard — GoalTrack Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #7c5dc7; --accent2: #a78bfa;
+      --accent-light: rgba(124,93,199,0.09);
+      --bg: #f5f2ff; --bg2: #ede8ff;
+      --surface: #ffffff; --surface2: #faf8ff;
+      --border: #d8d0f0; --border2: #c0b4e8;
+      --text: #1a1530; --text2: #4a3d72; --muted: #8a7aaa;
+      --green: #22b87a; --yellow: #d97706; --red: #e03e3e;
+      --sidebar-w: 240px;
+      --shadow: 0 2px 16px rgba(124,93,199,0.08);
+      --shadow-md: 0 6px 24px rgba(124,93,199,0.12);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Poppins', sans-serif; min-height: 100vh; display: flex; }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1.5px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 24px 0;
+      position: fixed; height: 100vh; overflow-y: auto;
+      box-shadow: 2px 0 16px rgba(124,93,199,0.06);
+    }
+
+    .logo { padding: 0 20px 22px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .logo h1 { font-size: 18px; font-weight: 800; color: var(--text); }
+    .logo h1 span { color: var(--accent); }
+    .role-badge { display: inline-block; background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-top: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    .nav-section { padding: 0 10px; margin-bottom: 6px; }
+    .nav-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); padding: 0 8px; margin-bottom: 4px; font-weight: 600; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 500; transition: all 0.2s; margin-bottom: 2px; }
+    .nav-item .icon { font-size: 15px; width: 20px; text-align: center; }
+    .nav-item:hover { background: var(--bg2); color: var(--text2); }
+    .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+    .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,var(--accent),var(--accent2)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 700; color: var(--text); }
+    .user-dept { font-size: 11px; color: var(--muted); }
+    .logout-btn { margin-top: 12px; width: 100%; padding: 9px; background: rgba(224,62,62,0.08); border: 1.5px solid rgba(224,62,62,0.2); color: var(--red); border-radius: 10px; cursor: pointer; font-size: 13px; font-family: 'Poppins',sans-serif; font-weight: 600; transition: all 0.2s; }
+    .logout-btn:hover { background: rgba(224,62,62,0.15); }
+
+    .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px; min-height: 100vh; overflow-y: auto; }
+    .page-header { margin-bottom: 28px; }
+    .page-header h2 { font-size: 24px; font-weight: 800; color: var(--text); }
+    .page-header p { color: var(--muted); margin-top: 4px; font-size: 13px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 14px; margin-bottom: 28px; }
+    .stat-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+    .stat-card .stat-icon { font-size: 22px; margin-bottom: 10px; }
+    .stat-card .stat-val { font-size: 28px; font-weight: 800; color: var(--text); }
+    .stat-card .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .section { background: var(--surface); border: 1.5px solid var(--border); border-radius: 18px; padding: 26px; margin-bottom: 22px; box-shadow: var(--shadow); }
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .section-head h3 { font-size: 15px; font-weight: 700; color: var(--text); }
+
+    .btn { padding: 9px 16px; border-radius: 9px; border: none; cursor: pointer; font-family: 'Poppins',sans-serif; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg,var(--accent),var(--accent2)); color: #fff; box-shadow: 0 3px 10px rgba(124,93,199,0.22); }
+    .btn-primary:hover { transform: translateY(-1px); }
+    .btn-outline { background: var(--surface2); border: 1.5px solid var(--border2); color: var(--text2); }
+    .btn-outline:hover { background: var(--bg2); border-color: var(--accent); color: var(--accent); }
+    .btn-sm { padding: 7px 13px; font-size: 12px; }
+    .btn-approve { background: rgba(34,184,122,0.12); color: #15a068; border: 1.5px solid rgba(34,184,122,0.25); }
+    .btn-approve:hover { background: rgba(34,184,122,0.2); }
+    .btn-reject { background: rgba(224,62,62,0.1); color: var(--red); border: 1.5px solid rgba(224,62,62,0.2); }
+    .btn-reject:hover { background: rgba(224,62,62,0.18); }
+    .btn-rework { background: rgba(217,119,6,0.1); color: #b45309; border: 1.5px solid rgba(217,119,6,0.22); }
+    .btn-rework:hover { background: rgba(217,119,6,0.18); }
+
+    .goal-card { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 12px; transition: all 0.2s; }
+    .goal-card:hover { border-color: var(--border2); box-shadow: var(--shadow-md); }
+    .goal-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .goal-title { font-weight: 700; font-size: 14px; color: var(--text); }
+    .goal-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; white-space: nowrap; }
+    .badge-approved { background: rgba(34,184,122,0.12); color: #15a068; border: 1px solid rgba(34,184,122,0.25); }
+    .badge-submitted { background: rgba(217,119,6,0.1); color: #b45309; border: 1px solid rgba(217,119,6,0.2); }
+    .badge-draft { background: rgba(138,122,170,0.12); color: var(--muted); border: 1px solid rgba(138,122,170,0.2); }
+    .badge-rejected { background: rgba(224,62,62,0.1); color: #c02828; border: 1px solid rgba(224,62,62,0.2); }
+    .badge-returned { background: rgba(217,119,6,0.1); color: #b45309; border: 1px solid rgba(217,119,6,0.2); }
+    .badge-locked { background: var(--accent-light); color: var(--accent); border: 1px solid rgba(124,93,199,0.2); }
+
+    .team-member-card { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+    .team-member-head { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background 0.2s; }
+    .team-member-head:hover { background: var(--bg2); }
+    .member-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,#3d74c8,#0ea5c8); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: white; flex-shrink: 0; }
+    .member-info { flex: 1; margin-left: 12px; }
+    .member-name { font-weight: 700; font-size: 14px; color: var(--text); }
+    .member-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .member-goals-list { padding: 0 20px 16px; display: none; }
+    .member-goals-list.open { display: block; }
+
+    .inline-edit-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+    .inline-input { background: var(--surface); border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: 'Poppins',sans-serif; font-size: 13px; outline: none; }
+    .inline-input:focus { border-color: var(--accent); }
+
+    .checkin-section { background: var(--accent-light); border: 1.5px solid rgba(124,93,199,0.18); border-radius: 12px; padding: 16px; margin-top: 12px; }
+    .checkin-textarea { width: 100%; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text); font-family: 'Poppins',sans-serif; font-size: 13px; outline: none; resize: vertical; min-height: 80px; }
+    .checkin-textarea:focus { border-color: var(--accent); }
+
+    .progress-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 10px; }
+    .q-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .q-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; }
+    .q-val { font-size: 15px; font-weight: 700; color: var(--text); }
+    .q-status { font-size: 10px; margin-top: 3px; color: var(--muted); font-weight: 600; }
+
+    .weight-display { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .weight-bar-bg { flex: 1; height: 7px; background: var(--bg2); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+    .weight-bar-fill { height: 100%; background: linear-gradient(to right,var(--accent),var(--accent2)); border-radius: 4px; }
+    .weight-txt { font-size: 12px; font-weight: 700; color: var(--accent); min-width: 35px; text-align: right; }
+
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+    .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+    .empty .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: var(--surface); border: 1.5px solid var(--border); border-left: 4px solid var(--accent); padding: 14px 20px; border-radius: 12px; font-size: 13px; color: var(--text); box-shadow: var(--shadow-md); transform: translateY(100px); opacity: 0; transition: all 0.4s ease; max-width: 320px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(26,21,48,0.4); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--surface); border: 1.5px solid var(--border); border-radius: 20px; padding: 28px; max-width: 480px; width: 100%; margin: 20px; box-shadow: var(--shadow-md); }
+    .modal h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 16px; }
+    .modal-buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; }
+  </style>
+</head>
+<body>
+<script src="state.js"></script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+  (function() {
+    const firebaseConfig = {
+      apiKey: "AIzaSyBkxzHv0NJSDQCsNbfFa8T-aD-vA3pFrwI",
+      authDomain: "goaltrack-pro-73fbf.firebaseapp.com",
+      databaseURL: "https://goaltrack-pro-73fbf-default-rtdb.firebaseio.com",
+      projectId: "goaltrack-pro-73fbf",
+      storageBucket: "goaltrack-pro-73fbf.firebasestorage.app",
+      messagingSenderId: "773602175748",
+      appId: "1:773602175748:web:c4b588da7dfb84f1863e51"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    window.db = firebase.database();
+  })();
+</script>
+
+<div class="sidebar">
+  <div class="logo">
+    <h1>GoalTrack <span>Pro</span></h1>
+    <div class="role-badge">Manager L1</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <div class="nav-item active" onclick="showSection('overview',this)"><span class="icon">🏠</span> Dashboard</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Approvals</div>
+    <div class="nav-item" onclick="showSection('pending',this)"><span class="icon">⏳</span> Pending Approvals <span id="pendingBadge" style="margin-left:auto;background:rgba(217,119,6,0.12);color:#b45309;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;"></span></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Team</div>
+    <div class="nav-item" onclick="showSection('team',this)"><span class="icon">👥</span> My Team</div>
+    <div class="nav-item" onclick="showSection('checkins',this)"><span class="icon">📊</span> Quarterly Check-ins</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="avatar" id="sidebarAvatar">--</div>
+      <div>
+        <div class="user-name" id="sidebarName">Loading...</div>
+        <div class="user-dept" id="sidebarDept">Manager</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="GTP.logout()">Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- OVERVIEW -->
+  <div class="page-section active" id="section-overview">
+    <div class="page-header"><h2>👋 Manager Dashboard</h2><p id="mgrDeptHeader">FY 2026 Goal Cycle — Loading...</p></div>
+    <div class="stats-grid" id="mgrStats"></div>
+    <div class="section"><div class="section-head"><h3>Team Goal Status</h3></div><div id="teamSummary"></div></div>
+  </div>
+
+  <!-- PENDING APPROVALS -->
+  <div class="page-section" id="section-pending">
+    <div class="page-header"><h2>Pending Approvals</h2><p>Review and approve submitted goals from your team members</p></div>
+    <div class="section">
+      <div class="section-head"><h3>Goals Awaiting Approval</h3><span id="pendingCount" class="badge badge-submitted"></span></div>
+      <div id="pendingList"></div>
+    </div>
+  </div>
+
+  <!-- MY TEAM -->
+  <div class="page-section" id="section-team">
+    <div class="page-header">
+      <h2>My Team</h2>
+      <p id="teamSubheading">View all team members and their goals</p>
+    </div>
+    <div id="debugPanel" style="background:#fff8e1;border:1.5px solid #f59e0b;border-radius:12px;padding:14px 18px;margin-bottom:18px;font-size:12px;color:#92400e;display:none;">
+      <strong>⚠️ Debug Info</strong><br>
+      <span id="debugMsg"></span>
+    </div>
+    <div class="section">
+      <div class="section-head">
+        <h3 id="teamHeading">Team Members</h3>
+        <span id="teamDeptBadge" class="badge" style="background:var(--accent-light);color:var(--accent);border:1px solid rgba(124,93,199,0.2);"></span>
+      </div>
+      <div id="teamList"></div>
+    </div>
+  </div>
+
+  <!-- QUARTERLY CHECK-INS -->
+  <div class="page-section" id="section-checkins">
+    <div class="page-header"><h2>Quarterly Check-ins</h2><p>Review Q2 achievements and add structured feedback comments</p></div>
+    <div class="section">
+      <div class="section-head"><h3>Q2 Check-in — Team Review</h3><span class="badge badge-approved">Window Open</span></div>
+      <div id="checkinTeamList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Return for Rework Modal -->
+<div class="modal-overlay" id="reworkModal">
+  <div class="modal">
+    <h3>↩️ Return for Rework</h3>
+    <div class="form-group">
+      <label>Reason / Comment for Employee</label>
+      <textarea class="checkin-textarea" id="reworkComment" placeholder="Explain what needs to be changed..."></textarea>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-rework btn-sm" onclick="confirmRework()">↩️ Return for Rework</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Auth guard (localStorage check — fast, synchronous) ─────────────
+// Firebase auth state is confirmed in onAuthStateChanged below
+const _user = GTP.getCurrentUser();
+if (!_user || _user.role !== 'mgr') { window.location.href = 'login.html'; }
+
+const MGR_ID   = _user ? _user.uid  : null;
+const MGR_NAME = _user ? _user.name : 'Manager';
+// Normalize dept to trim whitespace — prevents mismatch like "Sales " vs "Sales"
+const MGR_DEPT = _user ? (_user.dept || '').trim() : '';
+
+// MY_TEAM_IDS — list of employee UIDs under this manager's dept
+// Populated by initDashboard() after Firebase fetch
+let MY_TEAM_IDS = [];
+
+// window._teamEmps — the live employee objects, used by all render functions
+window._teamEmps = [];
+
+// ── Populate sidebar ───────────────────────────────────────────────
+(function initUI() {
+  if (!_user) return;
+  const initials = (_user.firstName && _user.lastName)
+    ? (_user.firstName[0] + _user.lastName[0]).toUpperCase()
+    : _user.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('sidebarAvatar').textContent = initials;
+  document.getElementById('sidebarName').textContent   = _user.name;
+  document.getElementById('sidebarDept').textContent   = 'Manager · ' + (MGR_DEPT || '');
+  const deptHeader = document.getElementById('mgrDeptHeader');
+  if (deptHeader) deptHeader.textContent = `FY 2026 Goal Cycle — Team: ${MGR_DEPT || 'Your Department'}`;
+})();
+
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.borderLeftColor = type==='error'?'var(--red)':type==='success'?'var(--green)':'var(--accent)';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+function showSection(id, navEl) {
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  if(navEl){ document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); navEl.classList.add('active'); }
+  if(id==='overview') renderOverview();
+  if(id==='pending')  renderPending();
+  if(id==='team')     renderTeam();
+  if(id==='checkins') renderCheckins();
+}
+
+// ── Helper: get employee name by uid ──────────────────────────────
+function getEmpName(id) {
+  const e = window._teamEmps.find(x=>x.uid===id||x.id===id)
+         || GTP.getEmployees().find(x=>x.uid===id||x.id===id);
+  return e ? e.name : id;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CORE: Fetch team from Firebase — called once on page load
+// All render functions rely on window._teamEmps being populated
+// ══════════════════════════════════════════════════════════════════
+async function fetchTeamFromFirebase() {
+  function showDebug(msg) {
+    const panel = document.getElementById('debugPanel');
+    const msgEl = document.getElementById('debugMsg');
+    if (panel && msgEl) { panel.style.display='block'; msgEl.innerHTML = msg; }
+    console.log('[GoalTrack]', msg);
+  }
+
+  if (!MGR_DEPT) {
+    showDebug('❌ MGR_DEPT is empty — manager session has no dept stored. Try logging out and logging in again.');
+    return;
+  }
+
+  try {
+    showDebug(`🔄 Fetching employees from Firebase... (Manager dept: <strong>${MGR_DEPT}</strong>)`);
+    const snap = await db.ref('employees').get();
+
+    if (!snap.exists()) {
+      showDebug(`⚠️ Firebase returned empty — no employees node found. Check Firebase Rules allow read access.`);
+    } else {
+      const allEmps = Object.values(snap.val());
+      showDebug(`✅ Firebase returned ${allEmps.length} total employee(s). Depts found: ${[...new Set(allEmps.map(e=>e.dept))].join(', ')} | Manager dept: <strong>${MGR_DEPT}</strong>`);
+
+      // Case-insensitive dept match
+      const deptEmps = allEmps.filter(e =>
+        (e.dept || '').trim().toLowerCase() === MGR_DEPT.toLowerCase()
+      );
+
+      if (deptEmps.length > 0) {
+        window._teamEmps = deptEmps;
+        GTP.cacheEmployees(deptEmps);
+        MY_TEAM_IDS = deptEmps.map(e => e.uid || e.id);
+        // Hide debug panel on success
+        const panel = document.getElementById('debugPanel');
+        if (panel) panel.style.display = 'none';
+        return true;
+      } else {
+        showDebug(`⚠️ No employees matched dept "<strong>${MGR_DEPT}</strong>". All employee depts in DB: ${allEmps.map(e=>`"${e.dept}"`).join(', ')}`);
+      }
+    }
+  } catch(err) {
+    showDebug(`❌ Firebase fetch ERROR: ${err.message || err}. This usually means Firebase Rules are blocking reads. Go to Firebase Console → Realtime Database → Rules and set: <code>{"rules":{".read":true,".write":true}}</code> temporarily for testing.`);
+    console.error('Firebase fetch failed:', err);
+  }
+
+  // Fallback to localStorage cache
+  const cached = GTP.getEmployees().filter(e =>
+    (e.dept || '').trim().toLowerCase() === MGR_DEPT.toLowerCase()
+  );
+  if (cached.length) {
+    window._teamEmps = cached;
+    MY_TEAM_IDS = cached.map(e => e.uid || e.id);
+    showDebug(`ℹ️ Using cached data: found ${cached.length} employee(s). Firebase was unavailable.`);
+  }
+  return false;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// OVERVIEW
+// ══════════════════════════════════════════════════════════════════
+function renderOverview() {
+  const deptHeader = document.getElementById('mgrDeptHeader');
+  if (deptHeader) deptHeader.textContent = `FY 2026 Goal Cycle — Team: ${MGR_DEPT || 'Your Department'}`;
+
+  const allGoals  = GTP.getGoals();
+  const teamGoals = allGoals.filter(g => MY_TEAM_IDS.includes(g.employeeId));
+  const pending   = teamGoals.filter(g => g.status === 'submitted').length;
+  const approved  = teamGoals.filter(g => g.status === 'approved').length;
+  const checkins  = teamGoals.filter(g => g.status === 'approved' && g.achievements.Q2 !== null).length;
+
+  document.getElementById('mgrStats').innerHTML = `
+    <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-val">${MY_TEAM_IDS.length}</div><div class="stat-label">Team Members</div></div>
+    <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-val">${pending}</div><div class="stat-label">Pending Approval</div></div>
+    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val">${approved}</div><div class="stat-label">Goals Approved</div></div>
+    <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-val">${checkins}</div><div class="stat-label">Q2 Check-ins Done</div></div>
+  `;
+  document.getElementById('pendingBadge').textContent = pending || '';
+
+  document.getElementById('teamSummary').innerHTML = window._teamEmps.length
+    ? window._teamEmps.map(emp => {
+        const empId = emp.uid || emp.id;
+        const eg = allGoals.filter(g => g.employeeId === empId);
+        const ea = eg.filter(g => g.status === 'approved').length;
+        const ep = eg.filter(g => g.status === 'submitted').length;
+        const tw = eg.reduce((s,g) => s + (g.weightage||0), 0);
+        return `
+        <div class="team-member-card">
+          <div class="team-member-head">
+            <div class="member-avatar">${emp.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}</div>
+            <div class="member-info">
+              <div class="member-name">${emp.name}</div>
+              <div class="member-sub">${eg.length} goals · ${tw}% weightage · ${ea} approved, ${ep} pending</div>
+            </div>
+            <div class="badges">
+              ${ep>0?`<span class="badge badge-submitted">${ep} pending</span>`:''}
+              <span class="badge badge-approved">${ea} approved</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="empty"><div class="empty-icon">👥</div><p>No team members yet.</p></div>';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PENDING APPROVALS
+// ══════════════════════════════════════════════════════════════════
+function renderPending() {
+  const goals = GTP.getGoals().filter(g => MY_TEAM_IDS.includes(g.employeeId) && g.status === 'submitted');
+  document.getElementById('pendingCount').textContent = `${goals.length} pending`;
+
+  if (!goals.length) {
+    document.getElementById('pendingList').innerHTML = '<div class="empty"><div class="empty-icon">🎉</div><p>All goals have been reviewed!</p></div>';
+    return;
+  }
+
+  document.getElementById('pendingList').innerHTML = goals.map(g => `
+    <div class="goal-card" id="pcard-${g.id}">
+      <div class="goal-card-top">
+        <div>
+          <div class="goal-title">${g.title}</div>
+          <div class="goal-meta"><strong style="color:var(--accent)">${getEmpName(g.employeeId)}</strong> · ${g.thrustArea} · ${g.description}</div>
+        </div>
+        <div class="badges">
+          <span class="badge" style="background:rgba(124,93,199,0.1);color:#6340c0;border:1px solid rgba(124,93,199,0.2)">${g.uom}</span>
+          <span class="badge badge-submitted">Submitted</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0;font-size:13px;">
+        <div><div style="color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase">TARGET</div><div style="color:var(--text);font-weight:700;margin-top:3px">${g.target}</div></div>
+        <div><div style="color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase">WEIGHTAGE</div><div style="color:var(--text);font-weight:700;margin-top:3px">${g.weightage}%</div></div>
+        <div><div style="color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase">THRUST AREA</div><div style="color:var(--text);font-weight:700;margin-top:3px">${g.thrustArea}</div></div>
+      </div>
+      <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-weight:600;">Inline Edit (optional before approval)</div>
+        <div class="inline-edit-row">
+          <label style="font-size:12px;color:var(--text2);font-weight:600">Target:</label>
+          <input class="inline-input" id="itarget-${g.id}" value="${g.target}" style="width:120px" />
+          <label style="font-size:12px;color:var(--text2);font-weight:600">Weightage %:</label>
+          <input class="inline-input" id="iweight-${g.id}" type="number" value="${g.weightage}" min="10" max="100" style="width:80px" />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-approve btn-sm" onclick="approveGoal('${g.id}')">✅ Approve</button>
+        <button class="btn btn-rework btn-sm" onclick="openReworkModal('${g.id}')">↩️ Return for Rework</button>
+        <button class="btn btn-reject btn-sm" onclick="rejectGoal('${g.id}')">❌ Reject</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+let reworkGoalId = null;
+function openReworkModal(id) { reworkGoalId=id; document.getElementById('reworkModal').classList.add('open'); }
+function closeModal() { document.getElementById('reworkModal').classList.remove('open'); reworkGoalId=null; }
+function confirmRework() {
+  const comment = document.getElementById('reworkComment').value.trim();
+  if(!comment){ toast('Please add a reason','error'); return; }
+  const goals = GTP.getGoals();
+  const g = goals.find(x=>x.id===reworkGoalId); if(!g) return;
+  const newTarget = document.getElementById('itarget-'+reworkGoalId)?.value;
+  const newWeight = parseInt(document.getElementById('iweight-'+reworkGoalId)?.value);
+  if(newTarget) g.target=newTarget;
+  if(newWeight&&newWeight>=10) g.weightage=newWeight;
+  g.status='returned'; g.reworkComment=comment;
+  GTP.saveGoals(goals);
+  GTP.addAudit(MGR_NAME,'Manager','Goal Returned for Rework',`${getEmpName(g.employeeId)} — ${g.title}`,reworkGoalId);
+  closeModal(); toast('↩️ Goal returned for rework','error'); renderPending();
+}
+
+function approveGoal(id) {
+  const goals = GTP.getGoals();
+  const g = goals.find(x=>x.id===id); if(!g) return;
+  const newTarget = document.getElementById('itarget-'+id)?.value;
+  const newWeight = parseInt(document.getElementById('iweight-'+id)?.value);
+  if(newTarget) g.target=newTarget;
+  if(newWeight&&newWeight>=10) g.weightage=newWeight;
+  g.status='approved'; g.locked=true;
+  GTP.saveGoals(goals);
+  GTP.addAudit(MGR_NAME,'Manager','Goal Approved',`${getEmpName(g.employeeId)} — ${g.title}`,id);
+  toast('✅ Goal approved and locked!','success');
+  renderPending(); renderOverview();
+  document.getElementById('pendingBadge').textContent = GTP.getGoals().filter(g=>MY_TEAM_IDS.includes(g.employeeId)&&g.status==='submitted').length||'';
+}
+
+function rejectGoal(id) {
+  if(!confirm('Reject this goal? The employee will be notified.')) return;
+  const goals = GTP.getGoals();
+  const g = goals.find(x=>x.id===id); if(!g) return;
+  g.status='rejected';
+  GTP.saveGoals(goals);
+  GTP.addAudit(MGR_NAME,'Manager','Goal Rejected',`${getEmpName(g.employeeId)} — ${g.title}`,id);
+  toast('Goal rejected','error'); renderPending();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MY TEAM
+// ══════════════════════════════════════════════════════════════════
+function renderTeam() {
+  const teamList = document.getElementById('teamList');
+  const heading  = document.getElementById('teamHeading');
+  const badge    = document.getElementById('teamDeptBadge');
+  const sub      = document.getElementById('teamSubheading');
+
+  const deptLabel = MGR_DEPT || 'Your Department';
+  if (heading) heading.textContent = `${deptLabel} Team Members`;
+  if (badge)   badge.textContent   = deptLabel;
+  if (sub)     sub.textContent     = `Employees in the ${deptLabel} department reporting to you`;
+
+  const allGoals = GTP.getGoals();
+
+  if (!window._teamEmps.length) {
+    teamList.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">👥</div>
+        <p>No employees found in the <strong>${deptLabel}</strong> department yet.</p>
+        <p style="font-size:12px;margin-top:8px;color:var(--muted)">Employees who sign up under "${deptLabel}" will appear here.</p>
+      </div>`;
+    return;
+  }
+
+  teamList.innerHTML = window._teamEmps.map(emp => {
+    const empId = emp.uid || emp.id;
+    const eg = allGoals.filter(g => g.employeeId === empId);
+    const approved = eg.filter(g => g.status === 'approved').length;
+    const pending  = eg.filter(g => g.status === 'submitted').length;
+    const totalW   = eg.reduce((s, g) => s + (g.weightage || 0), 0);
+    const initials = emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    return `
+    <div class="team-member-card">
+      <div class="team-member-head" onclick="toggleMember('${empId}')">
+        <div class="member-avatar">${initials}</div>
+        <div class="member-info">
+          <div class="member-name">${emp.name}</div>
+          <div class="member-sub">${deptLabel} · ${eg.length} goal${eg.length!==1?'s':''} · ${totalW}% weightage</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${pending > 0 ? `<span class="badge badge-submitted">${pending} pending</span>` : ''}
+          <span class="badge badge-approved">${approved} approved</span>
+          <span style="color:var(--muted);font-size:18px;">▾</span>
+        </div>
+      </div>
+      <div class="member-goals-list" id="member-${empId}">
+        ${eg.length ? eg.map(g => `
+        <div class="goal-card" style="margin-bottom:10px">
+          <div class="goal-card-top">
+            <div>
+              <div class="goal-title">${g.title}</div>
+              <div class="goal-meta">${g.thrustArea}${g.description ? ' · ' + g.description : ''}</div>
+            </div>
+            <div class="badges">
+              <span class="badge badge-${g.status}">${g.status}</span>
+              ${g.locked ? '<span class="badge badge-locked">🔒</span>' : ''}
+            </div>
+          </div>
+          <div class="weight-display">
+            <span style="font-size:11px;color:var(--muted);width:70px;font-weight:600">Weight</span>
+            <div class="weight-bar-bg"><div class="weight-bar-fill" style="width:${g.weightage}%"></div></div>
+            <span class="weight-txt">${g.weightage}%</span>
+          </div>
+        </div>`).join('') : '<p style="color:var(--muted);font-size:13px;padding:10px 0">No goals yet</p>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMember(id) { document.getElementById('member-'+id).classList.toggle('open'); }
+
+// ══════════════════════════════════════════════════════════════════
+// QUARTERLY CHECK-INS
+// ══════════════════════════════════════════════════════════════════
+function renderCheckins() {
+  const allGoals = GTP.getGoals();
+  const quarter  = 'Q2';
+
+  document.getElementById('checkinTeamList').innerHTML = window._teamEmps.map(emp => {
+    const eg = allGoals.filter(g => g.employeeId === (emp.uid||emp.id) && g.status === 'approved');
+    if (!eg.length) return '';
+    return `
+    <div style="margin-bottom:28px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+        <div class="member-avatar">${emp.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}</div>
+        <div class="member-name">${emp.name}</div>
+        <span style="color:var(--muted);font-size:13px;">${eg.filter(g=>g.achievements[quarter]!==null).length}/${eg.length} updated</span>
+      </div>
+      ${eg.map(g => {
+        const score = GTP.computeScore(g.uom, g.target, g.achievements[quarter]);
+        return `
+        <div class="goal-card" style="margin-bottom:10px">
+          <div class="goal-card-top">
+            <div>
+              <div class="goal-title">${g.title}</div>
+              <div class="goal-meta">Target: ${g.target} · Actual: <strong style="color:${g.achievements[quarter]!==null?'var(--green)':'var(--muted)'}">${g.achievements[quarter]!==null?g.achievements[quarter]:'Not yet updated'}</strong></div>
+            </div>
+            ${score!==null?`<div style="font-size:22px;font-weight:800;color:${score>=80?'var(--green)':score>=50?'var(--yellow)':'var(--red)'}">${score}%</div>`:''}
+          </div>
+          <div class="progress-row">
+            ${['Q1','Q2','Q3','Q4'].map(q=>`<div class="q-block"><div class="q-label">${q}</div><div class="q-val">${g.achievements[q]!==null?g.achievements[q]:'—'}</div><div class="q-status">${g.goalStatus[q]||'—'}</div></div>`).join('')}
+          </div>
+          <div class="checkin-section">
+            <div style="font-size:11px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-weight:700">Manager Check-in Comment — ${quarter}</div>
+            <textarea class="checkin-textarea" id="cmt-${g.id}" placeholder="Add structured check-in comment...">${g.checkinComments[quarter]||''}</textarea>
+            <div style="margin-top:8px;">
+              <button class="btn btn-primary btn-sm" onclick="saveComment('${g.id}','${quarter}')">💬 Save Comment</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('') || '<div class="empty"><div class="empty-icon">⚠️</div><p>No approved goals in team yet.</p></div>';
+}
+
+function saveComment(goalId, quarter) {
+  const comment = document.getElementById('cmt-'+goalId).value.trim();
+  const goals = GTP.getGoals();
+  const g = goals.find(x=>x.id===goalId); if(!g) return;
+  g.checkinComments[quarter]=comment;
+  GTP.saveGoals(goals);
+  GTP.addAudit(MGR_NAME,'Manager',`${quarter} Check-in Comment Saved`,`${getEmpName(g.employeeId)} — ${g.title}`,goalId);
+  toast('💬 Check-in comment saved!','success');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BOOT — wait for Firebase Auth to restore session, THEN fetch
+// Rules require "auth != null" — so we MUST wait for onAuthStateChanged
+// before reading from the database, otherwise the read is blocked
+// ══════════════════════════════════════════════════════════════════
+firebase.auth().onAuthStateChanged(async (firebaseUser) => {
+  if (!firebaseUser) {
+    // Firebase Auth session not found — redirect to login
+    window.location.href = 'login.html';
+    return;
+  }
+  // Auth confirmed ✅ — now safe to read from Firebase DB
+  await fetchTeamFromFirebase();
+  renderOverview();
+});
+</script>
+</body>
+</html>

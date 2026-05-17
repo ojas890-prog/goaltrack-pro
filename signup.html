@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GoalTrack Pro — Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- ✅ Firebase SDK (v9 compat mode — works with plain HTML) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --bg: #f0f4ff;
+      --surface: #ffffff;
+      --surface2: #f5f8ff;
+      --border: #d0ddf5;
+      --text: #1a2340;
+      --text2: #3d4f73;
+      --muted: #7a8aaa;
+      --accent-emp: #3d74c8;
+      --accent-mgr: #7c5dc7;
+      --accent-adm: #d97706;
+      --shadow: 0 4px 24px rgba(61,116,200,0.10);
+      --shadow-lg: 0 12px 40px rgba(61,116,200,0.15);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 40px 20px 60px;
+    }
+
+    .bg-blobs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18; }
+    .blob-1 { width: 450px; height: 450px; background: #3d74c8; top: -120px; left: -80px; }
+    .blob-2 { width: 380px; height: 380px; background: #7c5dc7; bottom: -80px; right: -60px; }
+    .blob-3 { width: 280px; height: 280px; background: #0ea5c8; top: 45%; right: 20%; }
+
+    .container {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 860px;
+    }
+
+    .header { text-align: center; margin-bottom: 36px; }
+    .header .logo-txt { font-size: 30px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+    .header .logo-txt span { color: var(--accent-emp); }
+    .header p { color: var(--muted); margin-top: 6px; font-size: 14px; }
+
+    .roles-label {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .role-tabs { display: flex; gap: 14px; margin-bottom: 28px; justify-content: center; flex-wrap: wrap; }
+    .role-tab {
+      flex: 1; min-width: 180px; max-width: 220px;
+      padding: 18px 20px;
+      border-radius: 16px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.25s ease;
+      box-shadow: var(--shadow);
+    }
+    .role-tab .icon { font-size: 28px; margin-bottom: 8px; display: block; }
+    .role-tab .name { font-weight: 700; font-size: 14px; color: var(--text2); }
+    .role-tab .desc { font-size: 11px; margin-top: 3px; color: var(--muted); }
+
+    .role-tab.emp.active, .role-tab.emp:hover { border-color: var(--accent-emp); background: rgba(61,116,200,0.07); box-shadow: 0 0 0 4px rgba(61,116,200,0.12); }
+    .role-tab.emp.active .name { color: var(--accent-emp); }
+    .role-tab.mgr.active, .role-tab.mgr:hover { border-color: var(--accent-mgr); background: rgba(124,93,199,0.07); box-shadow: 0 0 0 4px rgba(124,93,199,0.12); }
+    .role-tab.mgr.active .name { color: var(--accent-mgr); }
+    .role-tab.adm.active, .role-tab.adm:hover { border-color: var(--accent-adm); background: rgba(217,119,6,0.07); box-shadow: 0 0 0 4px rgba(217,119,6,0.12); }
+    .role-tab.adm.active .name { color: var(--accent-adm); }
+
+    .signup-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 22px;
+      padding: 36px 40px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    .signup-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(to right, #3d74c8, #7c5dc7, #0ea5c8);
+      border-radius: 22px 22px 0 0;
+    }
+
+    .card-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .card-sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block;
+      font-size: 12px; font-weight: 600;
+      color: var(--text2);
+      margin-bottom: 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      padding: 13px 16px;
+      color: var(--text);
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      appearance: none;
+    }
+    .form-group input::placeholder { color: var(--muted); }
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--accent-emp);
+      box-shadow: 0 0 0 3px rgba(61,116,200,0.12);
+    }
+    .form-group.mgr-focused input:focus,
+    .form-group.mgr-focused select:focus {
+      border-color: var(--accent-mgr);
+      box-shadow: 0 0 0 3px rgba(124,93,199,0.12);
+    }
+    .form-group.adm-focused input:focus,
+    .form-group.adm-focused select:focus {
+      border-color: var(--accent-adm);
+      box-shadow: 0 0 0 3px rgba(217,119,6,0.12);
+    }
+
+    /* manager-only & admin-only fields */
+    .mgr-field, .adm-field { display: none; }
+    .mgr-field.show, .adm-field.show { display: block; }
+
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 44px; }
+    .toggle-pass {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 16px; padding: 4px;
+    }
+
+    .strength-bar {
+      height: 4px; border-radius: 4px;
+      background: var(--border);
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .strength-fill {
+      height: 100%; border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s, background 0.3s;
+    }
+    .strength-text {
+      font-size: 11px;
+      margin-top: 4px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .terms-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .terms-check input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: var(--accent-emp);
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .terms-check label {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.5;
+      cursor: pointer;
+    }
+    .terms-check label a { color: var(--accent-emp); text-decoration: none; font-weight: 600; }
+
+    .btn-signup {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      letter-spacing: 0.2px;
+      position: relative;
+    }
+    .btn-signup.emp { background: linear-gradient(135deg, #3d74c8, #0ea5c8); color: white; box-shadow: 0 4px 16px rgba(61,116,200,0.3); }
+    .btn-signup.mgr { background: linear-gradient(135deg, #7c5dc7, #a78bfa); color: white; box-shadow: 0 4px 16px rgba(124,93,199,0.3); }
+    .btn-signup.adm { background: linear-gradient(135deg, #d97706, #f59e0b); color: white; box-shadow: 0 4px 16px rgba(217,119,6,0.3); }
+    .btn-signup:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.05); }
+    .btn-signup:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-signup .spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+    }
+    .btn-signup.loading .spinner { display: block; }
+    @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      top: 24px; right: 24px;
+      background: #1a2340;
+      color: white;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      z-index: 9999;
+      transform: translateX(120%);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      max-width: 340px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toast.show { transform: translateX(0); }
+    .toast.success { border-left: 4px solid #22b87a; }
+    .toast.error { border-left: 4px solid #e03e3e; }
+    .toast .t-icon { font-size: 18px; }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0 20px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .divider span { font-size: 12px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+
+    .back-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .back-link a { color: var(--accent-emp); text-decoration: none; font-weight: 600; }
+    .back-link a:hover { text-decoration: underline; }
+
+    /* Error messages under fields */
+    .field-error {
+      font-size: 12px;
+      color: #e03e3e;
+      margin-top: 5px;
+      display: none;
+      font-weight: 500;
+    }
+    .field-error.show { display: block; }
+    .form-group input.invalid,
+    .form-group select.invalid {
+      border-color: #e03e3e;
+      box-shadow: 0 0 0 3px rgba(224,62,62,0.10);
+    }
+
+    @media(max-width: 600px) {
+      body { padding: 24px 14px 48px; }
+      .signup-card { padding: 28px 20px; }
+      .form-row { grid-template-columns: 1fr; }
+      .role-tabs { gap: 10px; }
+      .role-tab { min-width: 140px; padding: 14px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="t-icon" id="toastIcon">✅</span>
+  <span id="toastMsg">Message here</span>
+</div>
+
+<div class="container">
+  <div class="header">
+    <div class="logo-txt">GoalTrack <span>Pro</span></div>
+    <p>AtomQuest Hackathon 2026 — Create Your Account</p>
+  </div>
+
+  <div class="roles-label">Select Your Role</div>
+
+  <div class="role-tabs">
+    <div class="role-tab emp active" onclick="selectRole('emp')">
+      <span class="icon">👤</span>
+      <div class="name">Employee</div>
+      <div class="desc">Create & Track Goals</div>
+    </div>
+    <div class="role-tab mgr" onclick="selectRole('mgr')">
+      <span class="icon">🧑‍💼</span>
+      <div class="name">Manager</div>
+      <div class="desc">Approve & Review</div>
+    </div>
+    <div class="role-tab adm" onclick="selectRole('adm')">
+      <span class="icon">⚙️</span>
+      <div class="name">Admin / HR</div>
+      <div class="desc">Configure & Oversee</div>
+    </div>
+  </div>
+
+  <div class="signup-card">
+    <div class="card-title" id="cardTitle">Create Employee Account</div>
+    <div class="card-sub" id="cardSub">Set up your goal tracking profile</div>
+
+    <!-- Common fields -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" id="firstName" placeholder="Aryan" />
+        <div class="field-error" id="err-firstName">Please enter your first name.</div>
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" id="lastName" placeholder="Sharma" />
+        <div class="field-error" id="err-lastName">Please enter your last name.</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Work Email</label>
+      <input type="email" id="emailInput" placeholder="you@company.com" />
+      <div class="field-error" id="err-email">Please enter a valid email address.</div>
+    </div>
+
+    <div class="form-group" id="deptFieldGroup">
+      <label>Department</label>
+      <select id="deptInput">
+        <option value="">— Select Department —</option>
+        <option>Engineering</option>
+        <option>Sales</option>
+        <option>Marketing</option>
+        <option>HR</option>
+        <option>Finance</option>
+        <option>Operations</option>
+        <option>Product</option>
+      </select>
+      <div class="field-error" id="err-dept">Please select a department.</div>
+    </div>
+
+    <!-- Manager-only field -->
+    <div class="form-group mgr-field" id="mgrTeamField">
+      <label>Team Name</label>
+      <input type="text" id="teamName" placeholder="e.g. Backend Platform Team" />
+    </div>
+
+    <!-- Admin-only field -->
+    <div class="form-group adm-field" id="admCodeField">
+      <label>Admin Access Code</label>
+      <input type="password" id="adminCode" placeholder="Enter admin registration code" />
+      <div class="field-error" id="err-adminCode">Invalid admin access code.</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:5px;">Contact your HR to obtain the admin code.</div>
+    </div>
+
+    <div class="form-group">
+      <label>Password</label>
+      <div class="password-wrap">
+        <input type="password" id="passInput" placeholder="Create a strong password" oninput="checkStrength(this.value)" />
+        <button class="toggle-pass" type="button" onclick="togglePass('passInput', this)">👁️</button>
+      </div>
+      <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+      <div class="strength-text" id="strengthText">Enter a password</div>
+      <div class="field-error" id="err-pass">Password must be at least 8 characters.</div>
+    </div>
+
+    <div class="form-group">
+      <label>Confirm Password</label>
+      <div class="password-wrap">
+        <input type="password" id="confirmPass" placeholder="Re-enter your password" />
+        <button class="toggle-pass" type="button" onclick="togglePass('confirmPass', this)">👁️</button>
+      </div>
+      <div class="field-error" id="err-confirm">Passwords do not match.</div>
+    </div>
+
+    <div class="terms-check">
+      <input type="checkbox" id="termsCheck" />
+      <label for="termsCheck">
+        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a> of GoalTrack Pro.
+      </label>
+    </div>
+
+    <button class="btn-signup emp" id="signupBtn" onclick="doSignup()">
+      Create Employee Account
+      <div class="spinner"></div>
+    </button>
+
+    <div class="divider"><span>Already have an account?</span></div>
+
+    <div style="text-align:center;">
+      <a href="login.html" style="color:var(--accent-emp);font-weight:700;font-size:14px;text-decoration:none;">
+        Sign In Instead →
+      </a>
+    </div>
+  </div>
+
+  <div class="back-link" style="margin-top:20px;">
+    <a href="index.html">← Back to Home</a>
+  </div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────────────────
+  // 🔥 FIREBASE CONFIG — Replace with YOUR project's config values
+  //    Go to: Firebase Console → Your Project → Project Settings →
+  //    "Your apps" → SDK setup and configuration → Config
+  // ─────────────────────────────────────────────────────────────────
+  const firebaseConfig = {
+    apiKey: "AIzaSyBkxzHv0NJSDQCsNbfFa8T-aD-vA3pFrwI",
+    authDomain: "goaltrack-pro-73fbf.firebaseapp.com",
+    databaseURL: "https://goaltrack-pro-73fbf-default-rtdb.firebaseio.com",
+    projectId: "goaltrack-pro-73fbf",
+    storageBucket: "goaltrack-pro-73fbf.firebasestorage.app",
+    messagingSenderId: "773602175748",
+    appId: "1:773602175748:web:c4b588da7dfb84f1863e51",
+    measurementId: "G-91T5KD1TRX"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.database();
+
+  // ─── Admin code (store this in Firebase Remote Config in production) ───
+  const ADMIN_SECRET = "ATOMQUEST2026";
+
+  // ─── Role state ───────────────────────────────────────────────────
+  let currentRole = 'emp';
+
+  const roleConfig = {
+    emp: { title: 'Create Employee Account', sub: 'Set up your goal tracking profile',   btn: 'Create Employee Account', redirect: 'employee-dashboard.html' },
+    mgr: { title: 'Create Manager Account',  sub: 'Set up your team management profile', btn: 'Create Manager Account',  redirect: 'manager-dashboard.html' },
+    adm: { title: 'Create Admin / HR Account', sub: 'Set up your HR administration profile', btn: 'Create Admin Account', redirect: 'admin-dashboard.html' }
+  };
+
+  function selectRole(role) {
+    currentRole = role;
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.role-tab.' + role).classList.add('active');
+
+    const c = roleConfig[role];
+    document.getElementById('cardTitle').textContent = c.title;
+    document.getElementById('cardSub').textContent = c.sub;
+
+    const btn = document.getElementById('signupBtn');
+    btn.textContent = c.btn;
+    btn.className = 'btn-signup ' + role;
+    // re-add spinner after textContent reset
+    const sp = document.createElement('div');
+    sp.className = 'spinner';
+    btn.appendChild(sp);
+
+    // Show/hide role-specific fields
+    document.querySelectorAll('.mgr-field').forEach(el => el.classList.toggle('show', role === 'mgr'));
+    document.querySelectorAll('.adm-field').forEach(el => el.classList.toggle('show', role === 'adm'));
+
+    // Admins are org-wide — no department needed
+    const deptGroup = document.getElementById('deptFieldGroup');
+    if (deptGroup) deptGroup.style.display = role === 'adm' ? 'none' : '';
+    if (role === 'adm') document.getElementById('deptInput').value = '';
+  }
+
+  // ─── Password visibility toggle ──────────────────────────────────
+  function togglePass(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else                        { inp.type = 'password'; btn.textContent = '👁️'; }
+  }
+
+  // ─── Password strength ───────────────────────────────────────────
+  function checkStrength(val) {
+    const fill = document.getElementById('strengthFill');
+    const txt  = document.getElementById('strengthText');
+    let score = 0;
+    if (val.length >= 8)              score++;
+    if (/[A-Z]/.test(val))           score++;
+    if (/[0-9]/.test(val))           score++;
+    if (/[^A-Za-z0-9]/.test(val))    score++;
+
+    const levels = [
+      { w: '0%',   bg: 'transparent', label: 'Enter a password' },
+      { w: '25%',  bg: '#e03e3e',     label: '🔴 Weak' },
+      { w: '50%',  bg: '#d97706',     label: '🟡 Fair' },
+      { w: '75%',  bg: '#3d74c8',     label: '🔵 Good' },
+      { w: '100%', bg: '#22b87a',     label: '🟢 Strong' },
+    ];
+    fill.style.width      = levels[score].w;
+    fill.style.background = levels[score].bg;
+    txt.textContent       = levels[score].label;
+  }
+
+  // ─── Toast ───────────────────────────────────────────────────────
+  function showToast(msg, type = 'success') {
+    const t   = document.getElementById('toast');
+    const ico = document.getElementById('toastIcon');
+    document.getElementById('toastMsg').textContent = msg;
+    ico.textContent = type === 'success' ? '✅' : '❌';
+    t.className = 'toast ' + type + ' show';
+    setTimeout(() => t.classList.remove('show'), 4000);
+  }
+
+  // ─── Field validation ─────────────────────────────────────────────
+  function validate() {
+    let ok = true;
+    const fields = ['firstName', 'lastName', 'emailInput', 'deptInput', 'passInput', 'confirmPass'];
+
+    // Clear all errors
+    document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+    document.querySelectorAll('input.invalid, select.invalid').forEach(e => e.classList.remove('invalid'));
+
+    const v = id => document.getElementById(id).value.trim();
+
+    if (!v('firstName')) { setErr('firstName', 'err-firstName'); ok = false; }
+    if (!v('lastName'))  { setErr('lastName',  'err-lastName');  ok = false; }
+
+    if (!v('emailInput') || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('emailInput'))) {
+      setErr('emailInput', 'err-email'); ok = false;
+    }
+
+    if (!v('deptInput') && currentRole !== 'adm') { setErr('deptInput', 'err-dept'); ok = false; }
+
+    if (v('passInput').length < 8) { setErr('passInput', 'err-pass'); ok = false; }
+
+    if (v('passInput') !== v('confirmPass')) { setErr('confirmPass', 'err-confirm'); ok = false; }
+
+    if (currentRole === 'adm') {
+      if (v('adminCode') !== ADMIN_SECRET) {
+        setErr('adminCode', 'err-adminCode'); ok = false;
+      }
+    }
+
+    if (!document.getElementById('termsCheck').checked) {
+      showToast('Please accept the Terms & Privacy Policy.', 'error'); ok = false;
+    }
+
+    return ok;
+  }
+
+  function setErr(inputId, errId) {
+    document.getElementById(inputId).classList.add('invalid');
+    document.getElementById(errId).classList.add('show');
+  }
+
+  // ─── Sign Up ──────────────────────────────────────────────────────
+  async function doSignup() {
+    if (!validate()) return;
+
+    const btn   = document.getElementById('signupBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const email     = document.getElementById('emailInput').value.trim();
+    const password  = document.getElementById('passInput').value.trim();
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName  = document.getElementById('lastName').value.trim();
+    const dept      = document.getElementById('deptInput').value.trim();
+    const teamName  = document.getElementById('teamName')?.value.trim() || '';
+
+    try {
+      // 1️⃣ Create user in Firebase Authentication
+      const userCred = await auth.createUserWithEmailAndPassword(email, password);
+      const uid = userCred.user.uid;
+
+      // 2️⃣ Update Firebase Auth display name
+      await userCred.user.updateProfile({ displayName: `${firstName} ${lastName}` });
+
+      // 3️⃣ Build the profile object for Realtime DB
+      const profileData = {
+        uid,
+        firstName,
+        lastName,
+        name: `${firstName} ${lastName}`,
+        email,
+        role: currentRole,        // 'emp' | 'mgr' | 'adm'
+        dept: currentRole === 'adm' ? null : dept,   // Admin has no department — they manage all
+        teamName: currentRole === 'mgr' ? teamName : null,
+        createdAt: new Date().toISOString(),
+        status: 'active'
+      };
+
+      // 4️⃣ Write ONCE to role-specific node only (no duplicate /users entry)
+      //    /employees/{uid}  /managers/{uid}  /admins/{uid}
+      const roleNode = currentRole === 'emp' ? 'employees'
+                     : currentRole === 'mgr' ? 'managers'
+                     :                         'admins';
+      await db.ref(`${roleNode}/${uid}`).set(profileData);
+
+      // 6️⃣ Store session in localStorage (mirrors state.js pattern)
+      localStorage.setItem('gtp_role', currentRole);
+      localStorage.setItem('gtp_user', JSON.stringify({
+        uid, role: currentRole, email,
+        name: `${firstName} ${lastName}`,
+        dept: currentRole === 'adm' ? null : dept   // Admin is org-wide
+      }));
+
+      showToast(`Welcome, ${firstName}! Redirecting…`, 'success');
+
+      setTimeout(() => {
+        window.location.href = roleConfig[currentRole].redirect;
+      }, 1800);
+
+    } catch (err) {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+
+      // Friendly Firebase error messages
+      const msg = {
+        'auth/email-already-in-use': 'This email is already registered. Try signing in.',
+        'auth/weak-password':        'Password is too weak. Use at least 8 characters.',
+        'auth/invalid-email':        'Invalid email address format.',
+        'auth/network-request-failed': 'Network error. Please check your connection.',
+      }[err.code] || err.message;
+
+      showToast(msg, 'error');
+    }
+  }
+
+  selectRole('emp');
+</script>
+</body>
+</html>

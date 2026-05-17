@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GoalTrack Pro — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- ✅ Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --bg: #f0f4ff;
+      --bg2: #e4eeff;
+      --surface: #ffffff;
+      --surface2: #f5f8ff;
+      --border: #d0ddf5;
+      --text: #1a2340;
+      --text2: #3d4f73;
+      --muted: #7a8aaa;
+      --accent-emp: #3d74c8;
+      --accent-mgr: #7c5dc7;
+      --accent-adm: #d97706;
+      --shadow: 0 4px 24px rgba(61,116,200,0.10);
+      --shadow-lg: 0 12px 40px rgba(61,116,200,0.15);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 40px 20px 60px;
+    }
+
+    .bg-blobs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18; }
+    .blob-1 { width: 450px; height: 450px; background: #3d74c8; top: -120px; left: -80px; }
+    .blob-2 { width: 380px; height: 380px; background: #7c5dc7; bottom: -80px; right: -60px; }
+    .blob-3 { width: 280px; height: 280px; background: #0ea5c8; top: 45%; right: 20%; }
+
+    .container { position: relative; z-index: 1; width: 100%; max-width: 860px; }
+
+    .header { text-align: center; margin-bottom: 40px; }
+    .header .logo-txt { font-size: 30px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+    .header .logo-txt span { color: var(--accent-emp); }
+    .header p { color: var(--muted); margin-top: 6px; font-size: 14px; }
+
+    .roles-label {
+      text-align: center; color: var(--muted);
+      font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 16px; font-weight: 600;
+    }
+
+    .role-tabs { display: flex; gap: 14px; margin-bottom: 28px; justify-content: center; flex-wrap: wrap; }
+    .role-tab {
+      flex: 1; min-width: 180px; max-width: 220px;
+      padding: 18px 20px; border-radius: 16px;
+      border: 2px solid var(--border); background: var(--surface);
+      cursor: pointer; text-align: center;
+      transition: all 0.25s ease; color: var(--muted);
+      box-shadow: var(--shadow);
+    }
+    .role-tab .icon { font-size: 28px; margin-bottom: 8px; display: block; }
+    .role-tab .name { font-weight: 700; font-size: 14px; color: var(--text2); }
+    .role-tab .desc { font-size: 11px; margin-top: 3px; color: var(--muted); }
+
+    .role-tab.emp.active, .role-tab.emp:hover { border-color: var(--accent-emp); background: rgba(61,116,200,0.07); box-shadow: 0 0 0 4px rgba(61,116,200,0.12); }
+    .role-tab.emp.active .name { color: var(--accent-emp); }
+    .role-tab.mgr.active, .role-tab.mgr:hover { border-color: var(--accent-mgr); background: rgba(124,93,199,0.07); box-shadow: 0 0 0 4px rgba(124,93,199,0.12); }
+    .role-tab.mgr.active .name { color: var(--accent-mgr); }
+    .role-tab.adm.active, .role-tab.adm:hover { border-color: var(--accent-adm); background: rgba(217,119,6,0.07); box-shadow: 0 0 0 4px rgba(217,119,6,0.12); }
+    .role-tab.adm.active .name { color: var(--accent-adm); }
+
+    .login-card {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 22px; padding: 36px 40px;
+      box-shadow: var(--shadow-lg); position: relative; overflow: hidden;
+    }
+    .login-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(to right, #3d74c8, #7c5dc7, #0ea5c8);
+      border-radius: 22px 22px 0 0;
+    }
+
+    .card-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .card-sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--text2); margin-bottom: 7px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .form-group input {
+      width: 100%; background: var(--surface2);
+      border: 1.5px solid var(--border); border-radius: 11px;
+      padding: 13px 16px; color: var(--text);
+      font-family: 'Poppins', sans-serif; font-size: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+    }
+    .form-group input::placeholder { color: var(--muted); }
+    .form-group input:focus {
+      border-color: var(--focus-clr, var(--accent-emp));
+      box-shadow: 0 0 0 3px var(--focus-shadow, rgba(61,116,200,0.12));
+    }
+
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 44px; }
+    .toggle-pass {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 16px;
+    }
+
+    .forgot-link {
+      text-align: right; margin-top: -10px; margin-bottom: 18px;
+    }
+    .forgot-link a {
+      font-size: 12px; color: var(--accent-emp);
+      font-weight: 600; text-decoration: none;
+    }
+    .forgot-link a:hover { text-decoration: underline; }
+
+    /* Error banner */
+    .err-banner {
+      background: rgba(224,62,62,0.08);
+      border: 1.5px solid rgba(224,62,62,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      color: #c0392b;
+      display: none;
+      font-weight: 500;
+    }
+    .err-banner.show { display: block; }
+
+    .btn-login {
+      width: 100%; padding: 14px;
+      border: none; border-radius: 12px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: all 0.25s ease;
+      letter-spacing: 0.2px; position: relative;
+    }
+    .btn-login.emp { background: linear-gradient(135deg, #3d74c8, #0ea5c8); color: white; box-shadow: 0 4px 16px rgba(61,116,200,0.3); }
+    .btn-login.mgr { background: linear-gradient(135deg, #7c5dc7, #a78bfa); color: white; box-shadow: 0 4px 16px rgba(124,93,199,0.3); }
+    .btn-login.adm { background: linear-gradient(135deg, #d97706, #f59e0b); color: white; box-shadow: 0 4px 16px rgba(217,119,6,0.3); }
+    .btn-login:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.05); }
+    .btn-login:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    .btn-login .spinner {
+      display: none; width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4); border-top-color: white;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+    }
+    .btn-login.loading .spinner { display: block; }
+    @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0 20px;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .divider span { font-size: 12px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+
+    /* Forgot password modal */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(26,35,64,0.45); z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal {
+      background: white; border-radius: 20px; padding: 32px;
+      max-width: 420px; width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal h3 { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+    .modal p  { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+    .modal input {
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-family: 'Poppins', sans-serif; font-size: 14px;
+      color: var(--text); margin-bottom: 16px; outline: none;
+    }
+    .modal input:focus { border-color: var(--accent-emp); box-shadow: 0 0 0 3px rgba(61,116,200,0.12); }
+    .modal-btns { display: flex; gap: 10px; }
+    .modal-btns button {
+      flex: 1; padding: 12px; border: none; border-radius: 10px;
+      font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer;
+    }
+    .btn-cancel { background: var(--surface2); color: var(--text2); border: 1.5px solid var(--border) !important; }
+    .btn-reset  { background: linear-gradient(135deg,#3d74c8,#0ea5c8); color: white; }
+    .modal-msg  { font-size: 13px; margin-top: 10px; font-weight: 500; line-height: 1.5; }
+    .modal-msg.success { color: #22b87a; }
+    .modal-msg.error   { color: #e03e3e; }
+
+    .back-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--muted); }
+    .back-link a { color: var(--accent-emp); text-decoration: none; font-weight: 600; }
+    .back-link a:hover { text-decoration: underline; }
+
+    @media(max-width: 600px) {
+      body { padding: 24px 14px 48px; }
+      .login-card { padding: 28px 20px; }
+      .role-tabs { gap: 10px; }
+      .role-tab { min-width: 140px; padding: 14px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div class="modal-backdrop" id="forgotModal">
+  <div class="modal">
+    <h3>🔑 Reset Password</h3>
+    <p>Enter your registered email address. You'll receive a <strong>password reset link</strong> in your inbox — click it to set a new password.</p>
+    <input type="email" id="resetEmail" placeholder="you@company.com"
+           onkeydown="if(event.key==='Enter') sendReset()" />
+    <div class="modal-btns">
+      <button class="btn-cancel" id="cancelBtn" onclick="closeForgot()">Cancel</button>
+      <button class="btn-reset" id="resetBtn" onclick="sendReset()">
+        <span id="resetBtnText">Send Reset Link</span>
+        <span id="resetSpinner" style="display:none;">⏳ Sending…</span>
+      </button>
+    </div>
+    <div class="modal-msg" id="resetMsg"></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="header">
+    <div class="logo-txt">GoalTrack <span>Pro</span></div>
+    <p>AtomQuest Hackathon 2026 — Goal Setting & Tracking Portal</p>
+  </div>
+
+  <div class="roles-label">Select Your Role</div>
+
+  <div class="role-tabs">
+    <div class="role-tab emp active" onclick="selectRole('emp')">
+      <span class="icon">👤</span>
+      <div class="name">Employee</div>
+      <div class="desc">Create & Track Goals</div>
+    </div>
+    <div class="role-tab mgr" onclick="selectRole('mgr')">
+      <span class="icon">🧑‍💼</span>
+      <div class="name">Manager</div>
+      <div class="desc">Approve & Review</div>
+    </div>
+    <div class="role-tab adm" onclick="selectRole('adm')">
+      <span class="icon">⚙️</span>
+      <div class="name">Admin / HR</div>
+      <div class="desc">Configure & Oversee</div>
+    </div>
+  </div>
+
+  <div class="login-card">
+    <div class="card-title" id="cardTitle">Employee Login</div>
+    <div class="card-sub" id="cardSub">Access your goal dashboard and quarterly check-ins</div>
+
+    <div class="err-banner" id="errBanner">⚠️ <span id="errMsg">Invalid credentials.</span></div>
+
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="emailInput" placeholder="your.email@company.com" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <div class="password-wrap">
+        <input type="password" id="passInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+        <button class="toggle-pass" type="button" onclick="togglePass(this)">👁️</button>
+      </div>
+    </div>
+
+    <div class="forgot-link">
+      <a href="#" onclick="openForgot(); return false;">Forgot password?</a>
+    </div>
+
+    <button class="btn-login emp" id="loginBtn" onclick="doLogin()">
+      Login as Employee →
+      <div class="spinner"></div>
+    </button>
+
+    <div class="divider"><span>New to GoalTrack Pro?</span></div>
+
+    <div style="text-align:center;">
+      <a href="signup.html" style="color:var(--accent-emp);font-weight:700;font-size:14px;text-decoration:none;">
+        Create an Account →
+      </a>
+    </div>
+  </div>
+
+  <div class="back-link">
+    <a href="index.html">← Back to Home</a>
+  </div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────────────────
+  // 🔥 FIREBASE CONFIG — paste the SAME config as signup.html
+  // ─────────────────────────────────────────────────────────────────
+  const firebaseConfig = {
+    apiKey: "AIzaSyBkxzHv0NJSDQCsNbfFa8T-aD-vA3pFrwI",
+    authDomain: "goaltrack-pro-73fbf.firebaseapp.com",
+    databaseURL: "https://goaltrack-pro-73fbf-default-rtdb.firebaseio.com",
+    projectId: "goaltrack-pro-73fbf",
+    storageBucket: "goaltrack-pro-73fbf.firebasestorage.app",
+    messagingSenderId: "773602175748",
+    appId: "1:773602175748:web:c4b588da7dfb84f1863e51",
+    measurementId: "G-91T5KD1TRX"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.database();
+
+  let currentRole = 'emp';
+
+  const roleConfig = {
+    emp: { title: 'Employee Login',    sub: 'Access your goal dashboard and quarterly check-ins', btn: 'Login as Employee →', redirect: 'employee-dashboard.html' },
+    mgr: { title: 'Manager Login',     sub: 'Review team goals and conduct quarterly check-ins',  btn: 'Login as Manager →',  redirect: 'manager-dashboard.html' },
+    adm: { title: 'Admin / HR Login',  sub: 'Configure cycles, manage org, and view audit logs',  btn: 'Login as Admin →',    redirect: 'admin-dashboard.html' }
+  };
+
+  function selectRole(role) {
+    currentRole = role;
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.role-tab.' + role).classList.add('active');
+
+    const c = roleConfig[role];
+    document.getElementById('cardTitle').textContent = c.title;
+    document.getElementById('cardSub').textContent   = c.sub;
+
+    const btn = document.getElementById('loginBtn');
+    btn.textContent = c.btn;
+    btn.className = 'btn-login ' + role;
+    const sp = document.createElement('div');
+    sp.className = 'spinner';
+    btn.appendChild(sp);
+
+    // Update input focus color per role
+    const clr = { emp: ['#3d74c8','rgba(61,116,200,0.12)'], mgr: ['#7c5dc7','rgba(124,93,199,0.12)'], adm: ['#d97706','rgba(217,119,6,0.12)'] };
+    document.documentElement.style.setProperty('--focus-clr',    clr[role][0]);
+    document.documentElement.style.setProperty('--focus-shadow',  clr[role][1]);
+
+    hideError();
+  }
+
+  function togglePass(btn) {
+    const inp = document.getElementById('passInput');
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else                        { inp.type = 'password'; btn.textContent = '👁️'; }
+  }
+
+  function showError(msg) {
+    document.getElementById('errMsg').textContent = msg;
+    document.getElementById('errBanner').classList.add('show');
+  }
+  function hideError() {
+    document.getElementById('errBanner').classList.remove('show');
+  }
+
+  async function doLogin() {
+    const email = document.getElementById('emailInput').value.trim();
+    const pass  = document.getElementById('passInput').value.trim();
+
+    if (!email || !pass) { showError('Please enter your email and password.'); return; }
+
+    const btn = document.getElementById('loginBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+    hideError();
+
+    try {
+      // 1️⃣ Authenticate with Firebase Auth
+      const userCred = await auth.signInWithEmailAndPassword(email, pass);
+      const uid = userCred.user.uid;
+
+      // 2️⃣ Fetch profile from the role-specific node the user signed up under
+      //    (employees / managers / admins) — matches signup.html which writes only once
+      const roleNode = currentRole === 'emp' ? 'employees'
+                     : currentRole === 'mgr' ? 'managers'
+                     :                         'admins';
+      const snapshot = await db.ref(`${roleNode}/${uid}`).get();
+
+      if (!snapshot.exists()) {
+        // Profile not found under selected role — check other nodes to give helpful error
+        const nodes = ['employees','managers','admins'];
+        let foundRole = null;
+        for (const node of nodes) {
+          const s = await db.ref(`${node}/${uid}`).get();
+          if (s.exists()) { foundRole = s.val().role; break; }
+        }
+        const roleLabel = { emp: 'Employee', mgr: 'Manager', adm: 'Admin / HR' };
+        if (foundRole) {
+          throw { message: `This account is registered as ${roleLabel[foundRole]}. Please select the correct role tab.` };
+        }
+        throw { message: 'Account not found. Please sign up first.' };
+      }
+
+      const profile = snapshot.val();
+
+      // 3️⃣ Store complete session — all fields from Firebase profile
+      localStorage.setItem('gtp_role', profile.role);
+      localStorage.setItem('gtp_user', JSON.stringify({
+        uid:       profile.uid,
+        role:      profile.role,
+        email:     profile.email,
+        name:      profile.name,
+        firstName: profile.firstName,
+        lastName:  profile.lastName,
+        dept:      profile.role === 'adm' ? null : profile.dept,  // Admin has no department
+        teamName:  profile.teamName || null
+      }));
+
+      // 4️⃣ Redirect to correct dashboard
+      window.location.href = roleConfig[currentRole].redirect;
+
+    } catch (err) {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+
+      // Handle all Firebase Auth error codes (v8 compat + v9 modern)
+      const errorMap = {
+        'auth/user-not-found':           'No account found with this email. Please sign up first.',
+        'auth/wrong-password':           'Incorrect password. Please try again.',
+        'auth/invalid-email':            'Invalid email address format.',
+        'auth/too-many-requests':        'Too many failed attempts. Please wait a moment and try again.',
+        'auth/network-request-failed':   'Network error. Check your internet connection.',
+        'auth/invalid-credential':       'Incorrect email or password. Please check and try again.',
+        'auth/user-disabled':            'This account has been disabled. Contact your admin.',
+        'auth/operation-not-allowed':    'Email/password login is not enabled. Contact admin.',
+      };
+      const msg = errorMap[err.code] || err.message || 'Login failed. Please try again.';
+      showError(msg);
+    }
+  }
+
+  // ─── Forgot password ────────────────────────────────────────────
+  function openForgot() {
+    document.getElementById('forgotModal').classList.add('show');
+    document.getElementById('resetMsg').textContent = '';
+    document.getElementById('resetEmail').value = document.getElementById('emailInput').value;
+  }
+  function closeForgot() {
+    document.getElementById('forgotModal').classList.remove('show');
+    // Reset modal state for next use
+    const emailInput = document.getElementById('resetEmail');
+    emailInput.disabled = false;
+    emailInput.value    = '';
+    document.getElementById('resetMsg').textContent = '';
+    document.getElementById('resetMsg').className   = 'modal-msg';
+    const btn   = document.getElementById('resetBtn');
+    const txtEl = document.getElementById('resetBtnText');
+    const spinEl= document.getElementById('resetSpinner');
+    btn.disabled         = false;
+    btn.textContent      = '';          // clear "Sent ✓" if shown
+    txtEl.style.display  = 'inline';
+    spinEl.style.display = 'none';
+    btn.appendChild(txtEl);
+    btn.appendChild(spinEl);
+    document.getElementById('cancelBtn').disabled = false;
+  }
+
+  async function sendReset() {
+    const email  = document.getElementById('resetEmail').value.trim();
+    const msgEl  = document.getElementById('resetMsg');
+    const btn    = document.getElementById('resetBtn');
+    const cancel = document.getElementById('cancelBtn');
+    const txtEl  = document.getElementById('resetBtnText');
+    const spinEl = document.getElementById('resetSpinner');
+
+    // Clear previous messages
+    msgEl.textContent = '';
+    msgEl.className   = 'modal-msg';
+
+    // Basic validation
+    if (!email) {
+      msgEl.textContent = '⚠️ Please enter your email address.';
+      msgEl.className   = 'modal-msg error';
+      document.getElementById('resetEmail').focus();
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      msgEl.textContent = '⚠️ Please enter a valid email address.';
+      msgEl.className   = 'modal-msg error';
+      return;
+    }
+
+    // Show loading state
+    btn.disabled    = true;
+    cancel.disabled = true;
+    txtEl.style.display  = 'none';
+    spinEl.style.display = 'inline';
+
+    try {
+      // ──────────────────────────────────────────────────────────────────────
+      // 🔑 ACTION CODE SETTINGS
+      // Firebase will embed this URL in the reset email.
+      // When the user clicks the link, Firebase appends ?mode=resetPassword&oobCode=XXX
+      // to this URL, which opens YOUR custom reset-password.html page.
+      //
+      // ⚠️  IMPORTANT: You MUST add this URL to Firebase Console →
+      //     Authentication → Settings → Authorized Domains.
+      //     If running locally via file:// this won't work — host on any
+      //     static server (Firebase Hosting, Vercel, Netlify, GitHub Pages, etc.)
+      //     and use that domain here.
+      // ──────────────────────────────────────────────────────────────────────
+      // Build redirect URL only when on a real http/https server.
+      // file:// gives window.location.origin === "null" which Firebase
+      // rejects with auth/invalid-continue-uri → "Configuration error".
+      const _origin = window.location.origin;
+      const _isHttp = _origin && _origin !== 'null' && _origin.startsWith('http');
+
+      // Once you deploy, you can hard-code your URL here instead, e.g.:
+      // const RESET_URL = 'https://goaltrack-pro-73fbf.web.app/reset-password.html';
+      const RESET_URL = _isHttp ? (_origin + '/reset-password.html') : null;
+
+      const emailOptions = RESET_URL
+        ? { url: RESET_URL, handleCodeInApp: true }
+        : undefined;   // no custom redirect when running from file://
+
+      // Firebase sends the reset email. If emailOptions is undefined,
+      // Firebase uses its own hosted reset page (still works fine).
+      await auth.sendPasswordResetEmail(email, emailOptions);
+
+      // Success — show confirmation
+      msgEl.innerHTML   = '✅ <strong>Reset link sent!</strong> Check your inbox (and spam folder). Click the link in the email to set a new password.';
+      msgEl.className   = 'modal-msg success';
+
+      // Disable input to prevent re-submission
+      document.getElementById('resetEmail').disabled = true;
+      btn.textContent = 'Sent ✓';
+
+      // Auto-close after 6 seconds so user can read the message
+      setTimeout(closeForgot, 6000);
+
+    } catch (err) {
+      // Comprehensive Firebase error mapping
+      const errorMap = {
+        'auth/user-not-found':         '❌ No account found with this email. Please check the address or sign up.',
+        'auth/invalid-email':          '❌ Invalid email address. Please check and try again.',
+        'auth/too-many-requests':      '❌ Too many requests. Please wait a few minutes and try again.',
+        'auth/network-request-failed': '❌ Network error. Check your internet connection and try again.',
+        'auth/missing-email':          '❌ Please enter your email address.',
+        'auth/invalid-continue-uri':      '❌ Domain configuration error. Please contact support.',
+        'auth/unauthorized-continue-uri':  '❌ Domain not authorised in Firebase. Contact support.',
+        'auth/missing-continue-uri':       '❌ Reset URL missing. Please contact support.',
+      };
+
+      const msg = errorMap[err.code];
+
+      if (msg) {
+        msgEl.textContent = msg;
+      } else if (err.code && err.code.startsWith('auth/')) {
+        // Catch-all for any other Firebase auth errors
+        msgEl.textContent = '❌ Error: ' + err.message;
+      } else {
+        msgEl.textContent = '❌ Something went wrong. Please try again or contact support.';
+      }
+
+      msgEl.className = 'modal-msg error';
+
+      // Re-enable button so user can retry
+      btn.disabled    = false;
+      cancel.disabled = false;
+      txtEl.style.display  = 'inline';
+      spinEl.style.display = 'none';
+    }
+  }
+
+  selectRole('emp');
+</script>
+</body>
+</html>
