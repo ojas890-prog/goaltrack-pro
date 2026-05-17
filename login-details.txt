@@ -1,0 +1,88 @@
+GOALTRACK PRO
+Demo Credentials & User Journey
+
+==================================================
+1. EMPLOYEE PORTAL
+==================================================
+
+Employee Sign Up Fields:
+- First Name
+- Last Name
+- Work Email
+- Department
+- Password
+- Confirm Password
+
+Employee Sign In Fields:
+- Email
+- Password
+
+Employee User Journey:
+1. Employee creates account using Sign Up
+2. Employee logs into the portal
+3. Employee creates and manages goals
+4. Employee updates progress and achievements
+
+==================================================
+2. MANAGER PORTAL
+==================================================
+
+Manager Sign Up Fields:
+- First Name
+- Last Name
+- Work Email
+- Department
+- Team Name
+- Password
+- Confirm Password
+
+Manager Sign In Fields:
+- Email
+- Password
+
+Manager User Journey:
+1. Manager creates account using Sign Up
+2. Manager logs into the portal
+3. Manager reviews employee goals
+4. Manager monitors team progress
+
+==================================================
+3. ADMIN PORTAL
+==================================================
+
+Admin Sign Up Fields:
+- First Name
+- Last Name
+- Work Email
+- Admin Access Code
+- Password
+- Confirm Password
+
+Admin Sign In Fields:
+- Email
+- Password
+
+Admin Access Code:
+ATOMQUEST2026
+
+Admin User Journey:
+1. Admin creates account using Admin Access Code
+2. Admin logs into the portal
+3. Admin monitors overall workflow
+4. Admin manages portal activities
+
+==================================================
+LIVE WEBSITE
+==================================================
+
+https://goaltrack-pro-73fbf.web.app/index.html
+
+==================================================
+PROJECT
+==================================================
+
+GoalTrack Pro
+AtomQuest Hackathon Project
+
+Developed By:
+Ojas Shirode
