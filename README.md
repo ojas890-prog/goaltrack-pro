@@ -147,7 +147,7 @@ Used for:
 The project is hosted using Firebase Hosting.
 
 Hosted URL:
-https://goaltrack-pro-73fbf.web.app/login.html
+https://goaltrack-pro-73fbf.web.app/index.html
 
 ---
 
