@@ -180,3 +180,88 @@ This project was developed for the AtomQuest Hackathon.
 # 📜 License
 
 This project is created for educational and hackathon purposes.
+
+# 🔑 Demo Credentials & User Journey
+
+The portal supports three different user roles:
+
+- Employee
+- Manager
+- Admin
+
+---
+
+# 👨‍💼 Employee Portal
+
+## Sign Up Fields
+- First Name
+- Last Name
+- Work Email
+- Department
+- Password
+- Confirm Password
+
+## Sign In Fields
+- Email
+- Password
+
+---
+
+# 👨‍💻 Manager Portal
+
+## Sign Up Fields
+- First Name
+- Last Name
+- Work Email
+- Department
+- Team Name
+- Password
+- Confirm Password
+
+## Sign In Fields
+- Email
+- Password
+
+---
+
+# 🛠️ Admin Portal
+
+## Sign Up Fields
+- First Name
+- Last Name
+- Work Email
+- Admin Access Code
+- Password
+- Confirm Password
+
+## Sign In Fields
+- Email
+- Password
+
+### Admin Access Code
+
+```text
+ATOMQUEST2026
+```
+
+---
+
+# 🔄 User Journey Flow
+
+## Employee Flow
+1. Employee creates account using Sign Up
+2. Employee logs into the portal
+3. Employee creates and manages goals
+4. Employee updates progress and achievements
+
+## Manager Flow
+1. Manager creates account using Sign Up
+2. Manager logs into the portal
+3. Manager reviews employee goals
+4. Manager monitors team progress
+
+## Admin Flow
+1. Admin creates account using Admin Access Code
+2. Admin logs into the portal
+3. Admin monitors overall workflow
+4. Admin manages portal activities
