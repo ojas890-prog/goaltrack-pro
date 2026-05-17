@@ -8,7 +8,7 @@ The platform replaces traditional manual tracking methods such as spreadsheets, 
 
 # 🌐 Live Demo
 
-https://goaltrack-pro-73fbf.web.app/login.html
+https://goaltrack-pro-73fbf.web.app/index.html
 
 ---
 
